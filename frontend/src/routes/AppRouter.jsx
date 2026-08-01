@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 // Layouts
 import PublicLayout from "../layouts/PublicLayout.jsx";
@@ -23,6 +24,7 @@ import MyRewards from "../pages/customer/MyRewards.jsx";
 export default function AppRouter({ openWalletModal }) {
   return (
     <Routes>
+
       {/* Public */}
       <Route element={<PublicLayout openWalletModal={openWalletModal} />}>
         <Route path="/" element={<Home />} />
@@ -30,19 +32,30 @@ export default function AppRouter({ openWalletModal }) {
       </Route>
 
       {/* Merchant */}
-      <Route element={<MerchantLayout />}>
+      <Route
+        element={
+          <ProtectedRoute allowedRole="merchant">
+            <MerchantLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
         <Route path="/merchant/manage" element={<ManageRewards />} />
         <Route path="/merchant/scan" element={<ScanAndRedeem />} />
-        {/* <Route path="/merchant/settings" element={<MerchantSettings />} /> */}
-    </Route>
+      </Route>
 
       {/* Customer */}
-      <Route element={<CustomerLayout />}>
+      <Route
+        element={
+          <ProtectedRoute allowedRole="customer">
+            <CustomerLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/customer/dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/rewards" element={<MyRewards />} />
-        {/* <Route path="/customer/transfer" element={<TransferRewards />} /> */}
       </Route>
+
     </Routes>
   );
 }
