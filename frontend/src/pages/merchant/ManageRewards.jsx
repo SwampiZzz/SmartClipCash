@@ -82,7 +82,7 @@ export default function ManageRewards() {
       {activeTab === "coupons" && (
         <>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
 
@@ -158,7 +158,13 @@ export default function ManageRewards() {
       {activeTab === "punchcards" && (
         <>
 
-          <div>
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+
+              <h2 className="text-xl font-semibold">
+                Punch Cards
+              </h2>
 
             <h2 className="text-xl font-semibold">
               Punch Cards

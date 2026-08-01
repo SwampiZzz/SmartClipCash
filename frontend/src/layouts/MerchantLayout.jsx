@@ -22,13 +22,13 @@ const links = [
 
 export default function MerchantLayout() {
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex min-h-dvh bg-slate-50 md:h-dvh">
 
       {/* Fixed Sidebar */}
       <Sidebar links={links} />
 
       {/* Scrollable Content */}
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-28 pt-6 sm:px-6 md:p-8">
         <Outlet />
       </main>
 

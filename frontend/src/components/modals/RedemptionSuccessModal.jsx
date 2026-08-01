@@ -8,8 +8,8 @@ export default function RedemptionSuccessModal({ transaction, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm">
+      <div className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-8">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3"><CheckCircle2 className="text-emerald-600" size={34} /><div><h2 className="text-2xl font-bold">Reward redeemed</h2><p className="mt-1 text-sm text-slate-500">Your transaction was broadcast successfully.</p></div></div>
           <button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-slate-100"><X size={20} /></button>

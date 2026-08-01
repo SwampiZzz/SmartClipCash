@@ -19,7 +19,7 @@ export default function HowItWorks() {
           How SmartClipCash Works
         </span>
 
-        <h1 className="mt-6 text-5xl font-bold tracking-tight text-slate-900">
+        <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
           From Purchase
           <span className="block text-emerald-600">
             to Reward Redemption
