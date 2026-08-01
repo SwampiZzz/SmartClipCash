@@ -1,17 +1,3 @@
-/**
- * Creates SmartClipCash's fungible stamp-token category and retains its
- * minting NFT. Run this once per merchant/token programme.
- *
- * Required environment variables:
- *   BUSINESS_WIF       WIF for the funded merchant wallet (never commit this)
- *   BUSINESS_ADDRESS   Token-aware CashAddress for that same wallet
- *
- * Optional environment variables:
- *   BCH_NETWORK          chipnet (default), mainnet, testnet3, testnet4, regtest
- *   INITIAL_STAMPS       Number of stamps created in the genesis output (default: 1000)
- *   GENESIS_OUTPUT_SATS  BCH carried by the token output, in sats (default: 1000)
- */
-
 async function main() {
 const {
   ElectrumNetworkProvider,

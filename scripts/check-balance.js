@@ -1,13 +1,3 @@
-/**
- * Displays an address's SmartClipCash stamp balance for one CashToken category.
- * Required environment variables:
- *   ADDRESS       Token-aware CashAddress to inspect
- *   CATEGORY_ID   64-character hexadecimal stamp-token category ID
- *
- * Optional environment variables:
- *   BCH_NETWORK   chipnet (default), mainnet, testnet3, testnet4, regtest
- */
-
 async function main() {
   const { ElectrumNetworkProvider } = await import('cashscript');
 

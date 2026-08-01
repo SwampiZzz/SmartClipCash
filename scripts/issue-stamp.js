@@ -1,19 +1,3 @@
-/**
- * Issues pre-created stamp tokens from the merchant reserve to a customer.
- * Run after genesis-stamp-token.js.
- *
- * Required environment variables:
- *   BUSINESS_WIF       WIF for the merchant wallet which holds the minting NFT
- *   BUSINESS_ADDRESS   Token-aware CashAddress for that merchant wallet
- *   CATEGORY_ID        Category ID printed by genesis-stamp-token.js
- *   CUSTOMER_ADDRESS   Token-aware CashAddress receiving the new stamps
- *
- * Optional environment variables:
- *   BCH_NETWORK        chipnet (default), mainnet, testnet3, testnet4, regtest
- *   STAMPS_TO_ISSUE    Number of reserve stamps to send (default: 1)
- *   TOKEN_OUTPUT_SATS  BCH carried by the customer token output (default: 1000)
- */
-
 async function main() {
   const {
     ElectrumNetworkProvider,
