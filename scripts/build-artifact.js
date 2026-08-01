@@ -7,11 +7,13 @@ import { compileFile } from 'cashc';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const artifact = compileFile(path.resolve(__dirname, '../contracts/PunchCardRedeem.cash'));
+const contracts = ['CouponRedeem', 'PunchCardRedeem'];
 
-fs.writeFileSync(
-  path.resolve(__dirname, '../contracts/artifact/PunchCardRedeem.json'),
-  JSON.stringify(artifact, null, 2),
-);
-
-console.log('Artifact written to contracts/artifact/PunchCardRedeem.json');
+for (const name of contracts) {
+  const artifact = compileFile(path.resolve(__dirname, `../contracts/${name}.cash`));
+  fs.writeFileSync(
+    path.resolve(__dirname, `../contracts/artifact/${name}.json`),
+    JSON.stringify(artifact, null, 2),
+  );
+  console.log(`Artifact written to contracts/artifact/${name}.json`);
+}

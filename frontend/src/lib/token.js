@@ -175,7 +175,9 @@ export async function getMerchantPunchCards(address) {
 export async function getCustomerCoupons(address) {
   const utxos = await getCouponUtxos(address);
 
-  return utxos.map((utxo) => ({
+  return utxos
+    .filter((utxo) => utxo.token.nft?.capability === "none")
+    .map((utxo) => ({
     txid: utxo.txid,
     vout: utxo.vout,
 
@@ -191,8 +193,8 @@ export async function getCustomerCoupons(address) {
 
     satoshis: Number(utxo.satoshis),
 
-    utxo,
-  }));
+      utxo,
+    }));
 }
 
 /**

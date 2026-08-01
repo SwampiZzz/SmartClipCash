@@ -10,7 +10,7 @@ contract PunchCardRedeem(
         require(checkSig(businessSig, businessPk));
         require(checkSig(customerSig, customerPk)); 
 
-        //require(tx.inputs[0].tokenCategory == stampCategory);
+        require(tx.inputs[0].tokenCategory == stampCategory);
         require(tx.inputs[0].tokenAmount >= requiredStamps);
 
         int leftover = tx.inputs[0].tokenAmount - requiredStamps;

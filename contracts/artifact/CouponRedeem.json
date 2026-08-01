@@ -1,50 +1,105 @@
 {
   "contractName": "CouponRedeem",
   "constructorInputs": [
-    { "name": "businessPk", "type": "pubkey" },
-    { "name": "transferable", "type": "bool" },
-    { "name": "couponCategory", "type": "bytes32" },
-    { "name": "discountValue", "type": "int" }
+    {
+      "name": "businessPk",
+      "type": "pubkey"
+    },
+    {
+      "name": "transferable",
+      "type": "bool"
+    },
+    {
+      "name": "couponCategory",
+      "type": "bytes32"
+    },
+    {
+      "name": "discountValue",
+      "type": "int"
+    }
   ],
   "abi": [
     {
       "name": "redeem",
       "inputs": [
-        { "name": "businessSig", "type": "sig" },
-        { "name": "redeemerPk", "type": "pubkey" },
-        { "name": "redeemerSig", "type": "sig" }
+        {
+          "name": "businessSig",
+          "type": "sig"
+        },
+        {
+          "name": "redeemerPk",
+          "type": "pubkey"
+        },
+        {
+          "name": "redeemerSig",
+          "type": "sig"
+        }
       ]
     }
   ],
   "bytecode": "OP_TXLOCKTIME OP_CHECKLOCKTIMEVERIFY OP_DROP OP_4 OP_ROLL OP_OVER OP_CHECKSIGVERIFY OP_0 OP_UTXOTOKENCATEGORY OP_3 OP_ROLL OP_EQUALVERIFY OP_0 OP_UTXOTOKENCOMMITMENT OP_4 OP_SPLIT OP_SWAP OP_BIN2NUM OP_TXLOCKTIME OP_GREATERTHAN OP_VERIFY OP_ROT OP_NOTIF OP_3 OP_PICK OP_HASH160 OP_OVER OP_EQUALVERIFY OP_ENDIF OP_4 OP_ROLL OP_4 OP_ROLL OP_CHECKSIGVERIFY e803 OP_INPUTINDEX OP_UTXOVALUE OP_4 OP_PICK OP_SUB OP_SWAP OP_SUB OP_DUP OP_0 OP_GREATERTHANOREQUAL OP_VERIFY 76a914 OP_3 OP_ROLL OP_HASH160 OP_CAT 88ac OP_CAT OP_TXOUTPUTCOUNT OP_2 OP_NUMEQUALVERIFY OP_0 OP_OUTPUTVALUE OP_4 OP_ROLL OP_NUMEQUALVERIFY OP_1 OP_OUTPUTVALUE OP_ROT OP_NUMEQUALVERIFY OP_1 OP_OUTPUTBYTECODE OP_EQUAL OP_NIP",
-  "source": "pragma cashscript ^0.13.0;\n\n// Single-use coupon: redemption burns the NFT (no continuing token output),\n// which is the double-redemption protection. `transferable` toggles whether\n// only the original recipient can redeem, or anyone holding the coupon can.\n// Expiry and owner identity are read from the NFT's own commitment, not a\n// constructor constant, so one shared contract address can serve every\n// coupon in this category, each carrying its own expiry date.\n// Commitment layout: bytes4 expiry (little-endian unix timestamp) ++ bytes20 ownerPKH\n//\n// Expected transaction shape:\n//   input 0 = the coupon NFT, held normally in the customer's own wallet (plain P2PKH)\n//   input N = this contract's own pre-funded BCH reward pool (this.activeInputIndex)\n// The coupon is referenced explicitly at index 0 because this contract only\n// guards the BCH reward pool, not the NFT itself.\ncontract CouponRedeem(\n    pubkey businessPk,\n    bool transferable,\n    bytes32 couponCategory,\n    int discountValue\n) {\n    function redeem(sig businessSig, pubkey redeemerPk, sig redeemerSig) {\n        require(checkSig(businessSig, businessPk));\n\n        require(tx.inputs[0].tokenCategory == couponCategory);\n\n        bytes commitment = tx.inputs[0].nftCommitment;\n        bytes4 expiryBytes, bytes ownerPKH = commitment.split(4);\n        int expiry = int(expiryBytes);\n\n        require(tx.locktime < expiry); // expiry enforcement, straight from the token itself\n\n        if (!transferable) {\n            require(hash160(redeemerPk) == ownerPKH);\n        }\n        require(checkSig(redeemerSig, redeemerPk));\n\n        int minerFee = 1000;\n        int inputValue = tx.inputs[this.activeInputIndex].value;\n        int merchantChange = inputValue - discountValue - minerFee;\n        require(merchantChange >= 0);\n\n        bytes25 merchantLock = new LockingBytecodeP2PKH(hash160(businessPk));\n\n        // Output 0 pays the discount to the redeemer.\n        // Output 1 returns BCH change to merchant.\n        // There is no token output, so the coupon NFT is consumed forever.\n        require(tx.outputs.length == 2);\n        require(tx.outputs[0].value == discountValue);\n        require(tx.outputs[1].value == merchantChange);\n        require(tx.outputs[1].lockingBytecode == merchantLock);\n    }\n}\n",
+  "source": "pragma cashscript ^0.13.0;\r\n\r\n// Single-use coupon: redemption burns the NFT (no continuing token output),\r\n// which is the double-redemption protection. `transferable` toggles whether\r\n// only the original recipient can redeem, or anyone holding the coupon can.\r\n// Expiry and owner identity are read from the NFT's own commitment, not a\r\n// constructor constant, so one shared contract address can serve every\r\n// coupon in this category, each carrying its own expiry date.\r\n// Commitment layout: bytes4 expiry (little-endian unix timestamp) ++ bytes20 ownerPKH\r\n//\r\n// Expected transaction shape:\r\n//   input 0 = the coupon NFT, held normally in the customer's own wallet (plain P2PKH)\r\n//   input N = this contract's own pre-funded BCH reward pool (this.activeInputIndex)\r\n// The coupon is referenced explicitly at index 0 because this contract only\r\n// guards the BCH reward pool, not the NFT itself.\r\ncontract CouponRedeem(\r\n    pubkey businessPk,\r\n    bool transferable,\r\n    bytes32 couponCategory,\r\n    int discountValue\r\n) {\r\n    function redeem(sig businessSig, pubkey redeemerPk, sig redeemerSig) {\r\n        require(checkSig(businessSig, businessPk));\r\n\r\n        require(tx.inputs[0].tokenCategory == couponCategory);\r\n\r\n        bytes commitment = tx.inputs[0].nftCommitment;\r\n        bytes4 expiryBytes, bytes ownerPKH = commitment.split(4);\r\n        int expiry = int(expiryBytes);\r\n\r\n        require(tx.locktime < expiry); // expiry enforcement, straight from the token itself\r\n\r\n        if (!transferable) {\r\n            require(hash160(redeemerPk) == ownerPKH);\r\n        }\r\n        require(checkSig(redeemerSig, redeemerPk));\r\n\r\n        int minerFee = 1000;\r\n        int inputValue = tx.inputs[this.activeInputIndex].value;\r\n        int merchantChange = inputValue - discountValue - minerFee;\r\n        require(merchantChange >= 0);\r\n\r\n        bytes25 merchantLock = new LockingBytecodeP2PKH(hash160(businessPk));\r\n\r\n        // Output 0 pays the discount to the redeemer.\r\n        // Output 1 returns BCH change to merchant.\r\n        // There is no token output, so the coupon NFT is consumed forever.\r\n        require(tx.outputs.length == 2);\r\n        require(tx.outputs[0].value == discountValue);\r\n        require(tx.outputs[1].value == merchantChange);\r\n        require(tx.outputs[1].lockingBytecode == merchantLock);\r\n    }\r\n}\r\n",
   "fingerprint": "e5a7a4d485c6dd907936fece56fe7611813c8bb1ebe18b3cdfea58782797115c",
   "debug": {
     "bytecode": "c5b175547a78ad00ce537a8800cf547f7c81c5a0697b645379a9788868547a547aad02e803c0c65479947c947600a2690376a914537aa97e0288ac7ec4529d00cc547a9d51cc7b9d51cd8777",
     "sourceMap": "22:73:22:73;::::1;;23:25:23:36:0;;:38::48;:8::51:1;25:26:25:27:0;:16::42:1;:46::60:0;;:8::62:1;27:37:27:38:0;:27::53:1;28:62:28:63:0;:45::64:1;29:25:29:36:0;:21::37:1;31:16:31:27:0;:::36:1;:8::38;33:13:33:25:0;:12:35:9;34:28:34:38;;:20::39:1;:43::51:0;:12::53:1;33:27:35:9;36:25:36:36:0;;:38::48;;:8::51:1;38:23:38:27:0;39:35:39:56;:25::63:1;40:42:40:55:0;;:29:::1;:58::66:0;:29:::1;41:16:41:30:0;:34::35;:16:::1;:8::37;43:31:43:76:0;:64::74;;:56::75:1;:31::76;;;48:16:48:33:0;:37::38;:8::40:1;49:27:49:28:0;:16::35:1;:39::52:0;;:8::54:1;50:27:50:28:0;:16::35:1;:39::53:0;:8::55:1;51:27:51:28:0;:16::45:1;:8::63;22:73:52:5",
     "logs": [],
     "requires": [
-      { "ip": 5, "line": 22, "message": "Using tx.locktime requires a non-final sequence number on the spending input" },
-      { "ip": 10, "line": 23 },
-      { "ip": 15, "line": 25 },
-      { "ip": 24, "line": 31 },
-      { "ip": 31, "line": 34 },
-      { "ip": 37, "line": 36 },
-      { "ip": 49, "line": 41 },
-      { "ip": 59, "line": 48 },
-      { "ip": 64, "line": 49 },
-      { "ip": 68, "line": 50 },
-      { "ip": 72, "line": 51 }
+      {
+        "ip": 5,
+        "line": 22,
+        "message": "Using tx.locktime requires a non-final sequence number on the spending input"
+      },
+      {
+        "ip": 10,
+        "line": 23
+      },
+      {
+        "ip": 15,
+        "line": 25
+      },
+      {
+        "ip": 24,
+        "line": 31
+      },
+      {
+        "ip": 31,
+        "line": 34
+      },
+      {
+        "ip": 37,
+        "line": 36
+      },
+      {
+        "ip": 49,
+        "line": 41
+      },
+      {
+        "ip": 59,
+        "line": 48
+      },
+      {
+        "ip": 64,
+        "line": 49
+      },
+      {
+        "ip": 68,
+        "line": 50
+      },
+      {
+        "ip": 72,
+        "line": 51
+      }
     ],
-    "sourceTags": "0:2:lg"
+    "sourceTags": "0:2:lg;68:68:sc"
   },
   "compiler": {
     "name": "cashc",
-    "version": "0.13.0",
+    "version": "0.13.2",
     "options": {
       "enforceFunctionParameterTypes": true,
       "enforceLocktimeGuard": true
     }
   },
-  "updatedAt": "2026-08-01T14:11:50.053Z"
+  "updatedAt": "2026-08-01T20:57:13.525Z"
 }

@@ -14,6 +14,7 @@ export default function IssueCouponModal({
 
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerPubKey, setCustomerPubKey] = useState("");
+  const [expiryMinutes, setExpiryMinutes] = useState(60);
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
@@ -30,6 +31,10 @@ export default function IssueCouponModal({
       alert("Enter the customer's 33-byte compressed public key.");
       return;
     }
+    if (!Number.isInteger(Number(expiryMinutes)) || Number(expiryMinutes) < 1) {
+      alert("Expiry must be at least one minute.");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -40,12 +45,14 @@ export default function IssueCouponModal({
         customerAddress: customerAddress.trim(),
         customerPubKey: customerPubKey.trim(),
         category: reward.category,
+        expiryUnixSeconds: Math.floor(Date.now() / 1000) + (Number(expiryMinutes) * 60),
       });
 
       alert("Coupon issued successfully!");
 
       setCustomerAddress("");
       setCustomerPubKey("");
+      setExpiryMinutes(60);
       refreshWalletData();
       onIssued?.();
       onClose();
@@ -138,6 +145,19 @@ export default function IssueCouponModal({
 
           <div>
             <label className="mb-2 block text-sm font-semibold">
+              Expires in (minutes)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={expiryMinutes}
+              onChange={(e) => setExpiryMinutes(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold">
               Customer Public Key
             </label>
             <input
@@ -154,8 +174,8 @@ export default function IssueCouponModal({
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
 
             <p className="text-sm text-amber-700">
-              The recipient public key is embedded in the non-transferable coupon
-              contract, so the customer can prove ownership at redemption.
+              The coupon embeds its expiry and the recipient public-key hash, so
+              the contract can enforce both expiry and non-transferable ownership.
             </p>
 
           </div>

@@ -1,6 +1,6 @@
 async function main() {
   const path = await import('node:path');
-  const { compileFile } = await import('cashc');
+  const fs = await import('node:fs/promises');
   const { Contract, ElectrumNetworkProvider, SignatureTemplate, TransactionBuilder } = await import('cashscript');
   const required = ['BUSINESS_WIF', 'BUSINESS_ADDRESS', 'CUSTOMER_WIF', 'CUSTOMER_ADDRESS', 'COUPON_CATEGORY_ID'];
   const missing = required.filter((name) => !process.env[name]);
@@ -26,7 +26,10 @@ async function main() {
   const customerSigner = new SignatureTemplate(process.env.CUSTOMER_WIF);
   const businessPk = Buffer.from(businessSigner.getPublicKey()).toString('hex');
   const customerPk = Buffer.from(customerSigner.getPublicKey()).toString('hex');
-  const artifact = compileFile(path.resolve(process.cwd(), 'contracts', 'CouponRedeem.cash'));
+  const artifact = JSON.parse(await fs.readFile(
+    path.resolve(process.cwd(), 'contracts', 'artifact', 'CouponRedeem.json'),
+    'utf8',
+  ));
 
   // 4 constructor args, matching the current contract: businessPk, transferable,
   // couponCategory, discountValue. ownerPk is no longer a constructor param —

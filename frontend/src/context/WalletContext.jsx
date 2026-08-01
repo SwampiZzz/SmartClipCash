@@ -18,9 +18,23 @@ export function WalletProvider({ children }) {
     }
   });
   const [refreshKey, setRefreshKey] = useState(0);
+  const [transactionHistory, setTransactionHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("transactionHistory") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
 
   function refreshWalletData() {
     setRefreshKey((current) => current + 1);
+  }
+
+  function recordTransaction(transaction) {
+    setTransactionHistory((history) => [
+      { ...transaction, createdAt: new Date().toISOString() },
+      ...history,
+    ].slice(0, 25));
   }
 
   // Keep localStorage synchronized with wallet state
@@ -32,6 +46,10 @@ export function WalletProvider({ children }) {
     }
   }, [wallet]);
 
+  useEffect(() => {
+    localStorage.setItem("transactionHistory", JSON.stringify(transactionHistory));
+  }, [transactionHistory]);
+
   return (
     <WalletContext.Provider
       value={{
@@ -39,6 +57,8 @@ export function WalletProvider({ children }) {
         setWallet,
         refreshKey,
         refreshWalletData,
+        transactionHistory,
+        recordTransaction,
       }}
     >
       {children}

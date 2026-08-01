@@ -12,8 +12,8 @@ import {
   lockingBytecodeToCashAddress,
 } from "@bitauth/libauth";
 
-import couponArtifact from "../../../contracts/CouponRedeem.json";
-import punchCardArtifact from "../../../contracts/PunchCardRedeem.json";
+import couponArtifact from "../../../contracts/artifact/CouponRedeem.json";
+import punchCardArtifact from "../../../contracts/artifact/PunchCardRedeem.json";
 
 import { NETWORK } from "../config/appConfig";
 
@@ -170,6 +170,19 @@ export function buildCouponCommitment({
   return bytesToHex(expiry) + ownerPKH;
 }
 
+export function getCouponExpiry(commitment) {
+  if (!/^[0-9a-fA-F]{48}$/.test(commitment ?? "")) {
+    return null;
+  }
+
+  return new DataView(hexToBytes(commitment.slice(0, 8)).buffer)
+    .getUint32(0, true);
+}
+
+export function isCurrentCouponCommitment(commitment) {
+  return getCouponExpiry(commitment) !== null;
+}
+
 /**
  * ------------------------------------------------------------------
  * Contract Builders
@@ -184,7 +197,6 @@ export function buildCouponCommitment({
 
 export function createCouponContract({
   businessPubKey,
-  ownerPubKey,
   transferable,
   category,
   discountValue,
@@ -193,9 +205,8 @@ export function createCouponContract({
     couponArtifact,
     [
       businessPubKey,
-      ownerPubKey,
       transferable,
-      category,
+      reverseHexBytes(category),
       BigInt(discountValue),
     ],
     {
@@ -334,6 +345,8 @@ export async function getOrFundContract({
 export async function findCoupon({
   customerAddress,
   category,
+  txid,
+  vout,
 }) {
   const utxos =
     await provider.getUtxos(customerAddress);
@@ -343,7 +356,8 @@ export async function findCoupon({
       u.token &&
       u.token.category.toLowerCase() ===
         category.toLowerCase() &&
-      u.token.nft?.capability === "none"
+      u.token.nft?.capability === "none" &&
+      (!txid || (u.txid === txid && u.vout === vout))
   );
 }
 
@@ -387,7 +401,15 @@ export async function issueCoupon({
   customerAddress,
   customerPubKey,
   category,
+  expiryUnixSeconds,
 }) {
+  if (!/^(02|03)[0-9a-fA-F]{64}$/.test(customerPubKey)) {
+    throw new Error("Customer public key must be a compressed 33-byte hexadecimal key.");
+  }
+  if (!Number.isInteger(expiryUnixSeconds) || expiryUnixSeconds <= Math.floor(Date.now() / 1000)) {
+    throw new Error("Coupon expiry must be a future Unix timestamp.");
+  }
+
   const businessSigner = createSigner(businessWif);
 
   const utxos = await provider.getUtxos(
@@ -452,8 +474,10 @@ export async function issueCoupon({
         amount: 0n,
         nft: {
           capability: "none",
-          commitment:
-            customerPubKey.toLowerCase(),
+          commitment: buildCouponCommitment({
+            expiryUnixSeconds,
+            ownerPubkeyHex: customerPubKey,
+          }),
         },
       },
     })
@@ -529,6 +553,8 @@ export async function redeemCoupon({
   category,
   transferable = false,
   discountValue,
+  couponTxid,
+  couponVout,
 }) {
   const businessSigner = createSigner(businessWif);
   const customerSigner = createSigner(customerWif);
@@ -541,11 +567,34 @@ export async function redeemCoupon({
 
   const contract = createCouponContract({
     businessPubKey,
-    ownerPubKey: customerPubKey,
     transferable,
     category,
     discountValue,
   });
+
+  const couponUtxo =
+    await findCoupon({
+      customerAddress,
+      category,
+      txid: couponTxid,
+      vout: couponVout,
+    });
+
+  if (!couponUtxo) {
+    throw new Error(
+      "Customer does not own this coupon."
+    );
+  }
+
+  const expiry = getCouponExpiry(couponUtxo.token.nft?.commitment);
+  if (expiry === null) {
+    throw new Error(
+      "This is a legacy coupon without the expiry/owner commitment required by the current contract. Reissue it before redeeming."
+    );
+  }
+  if (expiry <= Math.floor(Date.now() / 1000)) {
+    throw new Error("This coupon has expired.");
+  }
 
   const contractFunding =
     BigInt(discountValue) +
@@ -559,18 +608,6 @@ export async function redeemCoupon({
       businessSigner,
       amount: contractFunding,
     });
-
-  const couponUtxo =
-    await findCoupon({
-      customerAddress,
-      category,
-    });
-
-  if (!couponUtxo) {
-    throw new Error(
-      "Customer does not own this coupon."
-    );
-  }
 
   const merchantChange =
     calculateMerchantChange(
