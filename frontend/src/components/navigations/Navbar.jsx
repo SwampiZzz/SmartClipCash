@@ -1,12 +1,12 @@
 import { NavLink } from "react-router-dom";
 import Logo from "./Logo";
 
-export default function Navbar({
-  walletConnected,
-  walletAddress,
-  onConnect,
-  onDisconnect,
-}) {
+import { useWallet } from "../../hooks/useWallet";
+
+export default function Navbar({ openWalletModal }) {
+  const { wallet, setWallet } = useWallet();
+  const walletConnected = wallet !== null;
+
   const links = [
     {
       label: "Home",
@@ -17,6 +17,11 @@ export default function Navbar({
       path: "/how-it-works",
     },
   ];
+
+  function handleDisconnect() {
+    setWallet(null);
+  }
+
 
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -37,7 +42,7 @@ export default function Navbar({
                 className={({ isActive }) =>
                   `text-sm font-medium transition ${
                     isActive
-                      ? "text-blue-600"
+                      ? "text-emerald-600 underline underline-offset-5"
                       : "text-slate-600 hover:text-slate-900"
                   }`
                 }
@@ -54,21 +59,21 @@ export default function Navbar({
 
           {walletConnected && (
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-              {walletAddress.slice(0, 8)}...
-              {walletAddress.slice(-6)}
+              {wallet.Address.slice(0, 8)}...
+              {wallet.Address.slice(-6)}
             </span>
           )}
 
           {!walletConnected ? (
             <button
-              onClick={onConnect}
-              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              onClick={openWalletModal}
+              className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
               Connect Wallet
             </button>
           ) : (
             <button
-              onClick={onDisconnect}
+              onClick={handleDisconnect}
               className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
             >
               Disconnect

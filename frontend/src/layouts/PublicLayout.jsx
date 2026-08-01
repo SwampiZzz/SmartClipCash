@@ -1,17 +1,14 @@
 import { Outlet } from "react-router-dom";
+import Navbar from "../components/navigations/Navbar";
 
-import Navbar from "../components/navigations/Navbar.jsx";
-
-export default function PublicLayout() {
+export default function PublicLayout({ openWalletModal }) {
   return (
     <div className="min-h-screen bg-slate-50">
-
-      <Navbar />
+      <Navbar openWalletModal={openWalletModal} />
 
       <main className="mx-auto max-w-7xl px-6 py-10">
-        <Outlet />
+        <Outlet context={{ openWalletModal }} />
       </main>
-
     </div>
   );
 }
