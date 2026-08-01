@@ -1,16 +1,9 @@
 export const wallets = {
   merchant: {
-    name: "Merchant",
-    address: "chipnet:qxxxxxxxxxxxxxxxx",
+    address: "chipnet:xxxxxxxx",
   },
 
-  customer1: {
-    name: "Customer A",
-    address: "chipnet:qyyyyyyyyyyyyyyyy",
-  },
-
-  customer2: {
-    name: "Customer B",
-    address: "chipnet:qzzzzzzzzzzzzzzzz",
+  customer: {
+    address: "chipnet:yyyyyyyy",
   },
 };
