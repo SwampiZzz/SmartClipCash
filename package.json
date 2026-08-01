@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "cashc": "^0.13.2",
+    "cashscript": "^0.13.2"
+  }
+}
