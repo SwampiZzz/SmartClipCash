@@ -1,0 +1,32 @@
+pragma cashscript ^0.13.0;
+
+contract CouponRedeem(
+    pubkey businessPk,
+    pubkey ownerPk,        //if transferable == false
+    bool transferable,
+    bytes32 couponCategory,
+    int discountValue
+) {
+    function redeem(sig businessSig, pubkey redeemerPk, sig redeemerSig) {
+        require(checkSig(businessSig, businessPk));
+        if (!transferable) {
+            require(redeemerPk == ownerPk);
+        }
+        require(checkSig(redeemerSig, redeemerPk));
+
+        require(tx.inputs[0].tokenCategory == couponCategory);
+
+        int minerFee = 1000;
+        int inputValue = tx.inputs[this.activeInputIndex].value;
+        int merchantChange = inputValue - discountValue - minerFee;
+        require(merchantChange >= 0);
+
+        bytes25 merchantLock = new LockingBytecodeP2PKH(hash160(businessPk));
+
+        require(tx.outputs.length == 2);
+        require(tx.outputs[0].value == discountValue);
+        require(tx.outputs[1].value == merchantChange);
+        require(tx.outputs[1].lockingBytecode == merchantLock);
+    }
+
+}
