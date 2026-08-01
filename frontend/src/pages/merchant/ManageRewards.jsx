@@ -161,14 +161,11 @@ export default function ManageRewards() {
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
-
-              <h2 className="text-xl font-semibold">
-                Punch Cards
-              </h2>
-
-            <h2 className="text-xl font-semibold">
-              Punch Cards
-            </h2>
+              <h2 className="text-xl font-semibold">Punch Cards</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Loyalty stamp collections stored on-chain.
+              </p>
+            </div>
 
             <button
               type="button"
