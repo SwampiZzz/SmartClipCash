@@ -153,7 +153,7 @@ export default function CustomerDashboard() {
 
             <div
               key={index}
-              className="flex items-center justify-between border-b border-slate-100 px-6 py-5 last:border-none"
+              className="flex flex-col items-start gap-3 border-b border-slate-100 px-5 py-5 last:border-none sm:flex-row sm:items-center sm:justify-between sm:px-6"
             >
 
               <div>
@@ -168,7 +168,7 @@ export default function CustomerDashboard() {
 
               </div>
 
-              <div className="flex items-center gap-5">
+              <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:gap-5">
 
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${

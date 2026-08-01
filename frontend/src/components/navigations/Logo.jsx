@@ -10,7 +10,7 @@ export default function Logo({ clickable = true }) {
         className="h-10 w-10 object-contain"
       />
 
-      <div>
+      <div className="hidden sm:block">
         <h1 className="text-lg font-bold text-slate-900">
           SmartClipCash
         </h1>

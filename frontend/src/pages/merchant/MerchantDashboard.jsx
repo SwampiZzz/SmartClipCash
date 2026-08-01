@@ -71,7 +71,7 @@ export default function MerchantDashboard() {
                 Stamp Supply
               </p>
 
-              <h2 className="mt-2 text-4xl font-bold">
+              <h2 className="mt-2 break-words text-3xl font-bold sm:text-4xl">
                 {loading ? "--" : summary.stamps}
               </h2>
 
@@ -158,7 +158,7 @@ export default function MerchantDashboard() {
 
           <div className="space-y-5 p-6">
 
-            <div className="flex justify-between">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
 
               <span className="text-slate-500">
                 Network
@@ -176,7 +176,7 @@ export default function MerchantDashboard() {
                 Wallet
               </span>
 
-              <span className="max-w-xs truncate font-medium">
+              <span className="break-all font-medium sm:max-w-xs sm:truncate">
                 {wallet?.address}
               </span>
 

@@ -21,7 +21,7 @@ export default function RewardTabs({
   ];
 
   return (
-    <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+    <div className="flex max-w-full items-center gap-2 overflow-x-auto border-b border-slate-200 pb-4 sm:gap-3">
 
       {tabs.map((tab) => (
         <button
@@ -29,7 +29,7 @@ export default function RewardTabs({
           disabled={tab.disabled}
           onClick={() => onChange(tab.id)}
           className={`
-            rounded-xl px-5 py-2.5 text-sm font-semibold transition
+            shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition sm:px-5
 
             ${
               activeTab === tab.id

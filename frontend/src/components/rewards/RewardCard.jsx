@@ -35,7 +35,7 @@ export default function RewardCard({
   const canIssue = type !== "coupon" || reward.capability === "minting";
 
   return (
-    <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <div className="group min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6">
 
       {/* Header */}
 
@@ -161,7 +161,7 @@ export default function RewardCard({
 
       {/* Footer */}
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
 
         <span className="text-xs uppercase tracking-wide text-slate-400">
           Blockchain Reward
@@ -171,7 +171,7 @@ export default function RewardCard({
           type="button"
           disabled={!canIssue}
           onClick={() => onIssue?.(reward)}
-          className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {canIssue ? current.button : "Issued Coupon"}
 
