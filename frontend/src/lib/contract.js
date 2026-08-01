@@ -278,14 +278,17 @@ export function createCouponContract({
 export function createPunchCardContract({
   businessPubKey,
   category,
- requiredStamps,
+  requiredStamps,
   rewardValue,
 }) {
   return new Contract(
     punchCardArtifact,
     [
       businessPubKey,
-      category,
+      // CashToken categories exposed by the provider are in display order.
+      // The covenant compares tx.inputs[0].tokenCategory, which uses the
+      // serialized transaction byte order.
+      reverseHexBytes(category),
       BigInt(requiredStamps),
       BigInt(rewardValue),
     ],
@@ -562,8 +565,8 @@ export async function issueStamps({
   stamps = 1,
 }) {
   const stampsToIssue = BigInt(stamps);
-  if (stampsToIssue < 1n) {
-    throw new Error("At least one stamp must be issued.");
+  if (stampsToIssue !== 1n) {
+    throw new Error("Punch cards issue exactly one stamp per transaction.");
   }
 
   const businessSigner = createSigner(businessWif);

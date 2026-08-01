@@ -24,7 +24,7 @@ export default function ScanAndRedeem() {
   const loadReference = useCallback(async (value) => {
     const enteredValue = value.trim();
     if (!enteredValue) return;
-    const reference = parseCouponReference(enteredValue);
+    const reference = parseRedemptionReference(enteredValue);
     const address = reference?.address ?? enteredValue;
     try {
       setLoading(true);
@@ -32,16 +32,19 @@ export default function ScanAndRedeem() {
         getCustomerCoupons(address),
         getCustomerPunchCards(address),
       ]);
-      const selectedCoupons = reference
+      const selectedCoupons = reference?.type === "coupon"
         ? nextCoupons.filter((coupon) => coupon.txid.toLowerCase() === reference.txid && coupon.vout === reference.vout)
-        : nextCoupons;
-      if (reference && selectedCoupons.length === 0) {
-        throw new Error("This coupon reference is no longer available in the customer's wallet.");
+        : reference ? [] : nextCoupons;
+      const selectedCards = reference?.type === "punchcard"
+        ? nextCards.filter((card) => card.category.toLowerCase() === reference.category)
+        : reference ? [] : nextCards;
+      if (reference && selectedCoupons.length === 0 && selectedCards.length === 0) {
+        throw new Error("This reward reference is no longer available in the customer's wallet.");
       }
       setLoadedAddress(address);
-      setCouponReference(reference);
+      setRedemptionReference(reference);
       setCoupons(selectedCoupons);
-      setCards(reference ? [] : nextCards);
+      setCards(selectedCards);
     } catch (error) {
       console.error(error);
       alert(error.message || "Unable to load this customer's rewards.");
@@ -63,7 +66,7 @@ export default function ScanAndRedeem() {
 
   function requireDemoCustomerSigner() {
     if (loadedAddress.toLowerCase() !== wallets.customer.address.toLowerCase()) {
-      throw new Error("This coupon requires the customer's signature. Connect the customer signing flow before redeeming an address other than the configured demo customer.");
+      throw new Error("This reward requires the customer's signature. Connect the customer signing flow before redeeming an address other than the configured demo customer.");
     }
     return wallets.customer.wif;
   }
