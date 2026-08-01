@@ -1,0 +1,69 @@
+.customer-dashboard {
+  max-width: 28rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.customer-dashboard h1 {
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.customer-dashboard-empty {
+  max-width: 28rem;
+  margin: 3rem auto;
+  text-align: center;
+  color: #6b6b76;
+}
+
+.punch-card {
+  margin-bottom: 1.5rem;
+}
+
+.punch-card-bar {
+  width: 100%;
+  height: 0.9rem;
+  background: #e4e4ea;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.punch-card-fill {
+  height: 100%;
+  background: #4f46e5;
+  transition: width 0.3s ease;
+}
+
+.punch-card-label {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.punch-card-complete {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #1a7f37;
+  font-weight: 600;
+}
+
+.dashboard-error {
+  color: #c0392b;
+  font-size: 0.9rem;
+}
+
+.btn-secondary {
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #44444d;
+  border: 1px solid #d8d8de;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

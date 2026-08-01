@@ -36,6 +36,7 @@ export function getProvider() {
  */
 
 const MINER_FEE = 1000n;
+const TOKEN_OUTPUT_SATOSHIS = 1000n;
 
 /**
  * ------------------------------------------------------------------
@@ -181,6 +182,65 @@ export function getCouponExpiry(commitment) {
 
 export function isCurrentCouponCommitment(commitment) {
   return getCouponExpiry(commitment) !== null;
+}
+
+/**
+ * Creates a new CashToken category. CashTokens genesis is authorized by
+ * spending output index 0; the category ID is the transaction ID of that
+ * input. The minting NFT is retained so coupon NFTs can be issued later.
+ */
+export async function createRewardCategory({
+  businessWif,
+  businessAddress,
+  type,
+  initialSupply = 0,
+}) {
+  if (type !== "coupon" && type !== "punchcard") {
+    throw new Error("Reward type must be coupon or punchcard.");
+  }
+
+  const supply = BigInt(initialSupply);
+  if (type === "coupon" && supply !== 0n) {
+    throw new Error("Coupon categories must start with zero fungible supply.");
+  }
+  if (type === "punchcard" && supply < 1n) {
+    throw new Error("Punch cards need an initial stamp supply of at least one.");
+  }
+
+  const signer = createSigner(businessWif);
+  const utxos = await provider.getUtxos(businessAddress);
+  const genesisInput = utxos.find((utxo) => !utxo.token && utxo.vout === 0);
+
+  if (!genesisInput) {
+    throw new Error(
+      "No eligible genesis coin found. Send a fresh BCH payment to this merchant wallet so it receives an output at index 0, then try again.",
+    );
+  }
+
+  const category = genesisInput.txid;
+  const fundingInputs = utxos.filter(
+    (utxo) => !utxo.token && utxo !== genesisInput,
+  );
+  const transaction = new TransactionBuilder({ provider })
+    // This must remain the first input: its outpoint defines the category.
+    .addInput(genesisInput, signer.unlockP2PKH());
+  if (fundingInputs.length) {
+    transaction.addInputs(fundingInputs, signer.unlockP2PKH());
+  }
+
+  const tx = await transaction.addOutput({
+      to: toTokenAddress(businessAddress),
+      amount: TOKEN_OUTPUT_SATOSHIS,
+      token: {
+        category,
+        amount: supply,
+        nft: { capability: "minting", commitment: "" },
+      },
+    })
+    .addBchChangeOutputIfNeeded({ to: businessAddress, feeRate: 1 })
+    .send();
+
+  return { txid: tx.txid, category, type, initialSupply: Number(supply) };
 }
 
 /**

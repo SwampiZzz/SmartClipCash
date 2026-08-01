@@ -22,7 +22,7 @@ export default function RedemptionSuccessModal({ transaction, onClose }) {
           <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Transaction ID</p><div className="mt-2 flex items-center gap-2"><code className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2 text-xs">{transaction.txid}</code><button type="button" onClick={copyTxid} title="Copy transaction ID" className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-white"><Copy size={16} /></button></div></div>
         </div>
 
-        <a href={`https://chipnet.chaingraph.cash/tx/${transaction.txid}`} target="_blank" rel="noreferrer" className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-emerald-200 px-4 py-3 font-semibold text-emerald-700 hover:bg-emerald-50"><ExternalLink size={17} />View on explorer</a>
+        <a href={`https://chipnet.bchexplorer.info/tx/${transaction.txid}`} target="_blank" rel="noreferrer" className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-emerald-200 px-4 py-3 font-semibold text-emerald-700 hover:bg-emerald-50"><ExternalLink size={17} />View on explorer</a>
         <button type="button" onClick={onClose} className="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700">Done</button>
       </div>
     </div>
