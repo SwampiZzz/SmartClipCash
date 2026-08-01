@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { LoaderCircle, Stamp, TicketPercent } from "lucide-react";
+import { useCallback, useState } from "react";
+import { LoaderCircle, ScanLine, Stamp, TicketPercent } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { getCustomerCoupons, getCustomerPunchCards } from "../../lib/token";
 import { redeemCoupon, redeemPunchCard } from "../../lib/contract";
@@ -7,6 +7,7 @@ import { getCouponRewardSats, getCouponName, getPunchCardConfig, getPunchCardNam
 import { wallets } from "../../constants/wallets";
 import RedemptionSuccessModal from "../../components/modals/RedemptionSuccessModal";
 import { parseCouponReference } from "../../lib/redemptionReference";
+import ScanCouponQrModal from "../../components/modals/ScanCouponQrModal";
 
 export default function ScanAndRedeem() {
   const { wallet, refreshWalletData, recordTransaction } = useWallet();
@@ -18,10 +19,10 @@ export default function ScanAndRedeem() {
   const [pending, setPending] = useState("");
   const [successTransaction, setSuccessTransaction] = useState(null);
   const [couponReference, setCouponReference] = useState(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
-  async function loadRewards(event) {
-    event.preventDefault();
-    const enteredValue = customerAddress.trim();
+  const loadReference = useCallback(async (value) => {
+    const enteredValue = value.trim();
     if (!enteredValue) return;
     const reference = parseCouponReference(enteredValue);
     const address = reference?.address ?? enteredValue;
@@ -47,7 +48,18 @@ export default function ScanAndRedeem() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  async function loadRewards(event) {
+    event.preventDefault();
+    await loadReference(customerAddress);
   }
+
+  const handleQrScan = useCallback((value) => {
+    setCustomerAddress(value);
+    setScannerOpen(false);
+    void loadReference(value);
+  }, [loadReference]);
 
   function requireDemoCustomerSigner() {
     if (loadedAddress.toLowerCase() !== wallets.customer.address.toLowerCase()) {
@@ -103,14 +115,19 @@ export default function ScanAndRedeem() {
   }
 
   return <div className="space-y-8">
-    <div><h1 className="text-3xl font-bold text-slate-900">Scan &amp; Redeem</h1><p className="mt-2 text-slate-500">Paste a customer address, or their coupon redemption reference to load one exact coupon.</p></div>
-    <form onSubmit={loadRewards} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><label className="block text-sm font-semibold">Customer address or coupon reference<input required value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="SCC1|bchtest:q...|transaction-id|0" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500" /></label><button disabled={loading} className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white disabled:opacity-60">{loading && <LoaderCircle size={17} className="animate-spin" />}{couponReference ? "Find coupon" : "Find rewards"}</button></form>
+    <div><h1 className="text-3xl font-bold text-slate-900">Scan &amp; Redeem</h1><p className="mt-2 text-slate-500">Scan the customer’s coupon QR code to load and verify the exact on-chain coupon.</p></div>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <button type="button" onClick={() => setScannerOpen(true)} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700"><ScanLine size={20} />Scan coupon QR</button>
+      <div className="my-5 flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-slate-400"><span className="h-px flex-1 bg-slate-200" />or enter manually<span className="h-px flex-1 bg-slate-200" /></div>
+      <form onSubmit={loadRewards}><label className="block text-sm font-semibold">Customer address or coupon reference<input required value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="SCC1|bchtest:q...|transaction-id|0" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500" /></label><button disabled={loading} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-600 px-5 py-3 font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 sm:w-auto">{loading && <LoaderCircle size={17} className="animate-spin" />}{couponReference ? "Find coupon" : "Find rewards"}</button></form>
+    </div>
     {loadedAddress && <div className="space-y-7">
       <p className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">Showing rewards for <code className="break-all font-mono text-xs">{loadedAddress}</code></p>
       <RewardSection title="Coupons" empty="No redeemable coupons found at this address.">{coupons.map((coupon) => <article key={`${coupon.txid}:${coupon.vout}`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><TicketPercent className="text-emerald-600" /><h2 className="mt-4 text-lg font-semibold">{getCouponName(coupon.category, coupon.commitment)}</h2><p className="mt-2 text-sm text-slate-500">One-time coupon &middot; {getCouponRewardSats(coupon.category)} sats reward</p><button disabled={Boolean(pending)} onClick={() => redeemSelectedCoupon(coupon)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-60">{pending === `coupon:${coupon.txid}:${coupon.vout}` && <LoaderCircle size={16} className="animate-spin" />}Redeem coupon</button></article>)}</RewardSection>
       <RewardSection title="Punch Cards" empty="No punch-card stamps found at this address.">{cards.map((card) => { const config = getPunchCardConfig(card.category); const ready = card.stamps >= config.requiredStamps; return <article key={card.category} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><Stamp className="text-blue-600" /><h2 className="mt-4 text-lg font-semibold">{getPunchCardName(card.category)}</h2><p className="mt-2 text-sm text-slate-500">Customer progress: {card.stamps}/{config.requiredStamps} stamps</p><button disabled={!ready || Boolean(pending)} onClick={() => redeemSelectedPunchCard(card)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-60">{pending === `punch:${card.category}` && <LoaderCircle size={16} className="animate-spin" />}{ready ? "Redeem completed card" : "Not completed"}</button></article>; })}</RewardSection>
     </div>}
     <RedemptionSuccessModal transaction={successTransaction} onClose={() => setSuccessTransaction(null)} />
+    {scannerOpen && <ScanCouponQrModal open onClose={() => setScannerOpen(false)} onScan={handleQrScan} />}
   </div>;
 }
 
