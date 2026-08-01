@@ -1,6 +1,6 @@
 async function main() {
   const path = await import('node:path');
-  const { compileFile } = await import('cashc');
+  const fs = await import('node:fs/promises');
   const {
     Contract,
     ElectrumNetworkProvider,
@@ -44,7 +44,10 @@ async function main() {
   const customerSigner = new SignatureTemplate(process.env.CUSTOMER_WIF);
   const businessPk = Buffer.from(businessSigner.getPublicKey()).toString('hex');
   const customerPk = Buffer.from(customerSigner.getPublicKey()).toString('hex');
-  const artifact = compileFile(path.resolve(process.cwd(), 'contracts', 'PunchCardRedeem.cash'));
+  const artifact = JSON.parse(await fs.readFile(
+    path.resolve(process.cwd(), 'contracts', 'artifact', 'PunchCardRedeem.json'),
+    'utf8',
+  ));
   const contract = new Contract(
     artifact,
     [businessPk, categoryId, requiredStamps, rewardSats],

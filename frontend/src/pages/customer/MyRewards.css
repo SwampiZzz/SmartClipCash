@@ -1,0 +1,77 @@
+.my-rewards {
+  max-width: 28rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.my-rewards h1 {
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.my-rewards-empty {
+  max-width: 28rem;
+  margin: 3rem auto;
+  text-align: center;
+  color: #6b6b76;
+}
+
+.rewards-empty-state {
+  color: #6b6b76;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.rewards-error {
+  color: #c0392b;
+  font-size: 0.9rem;
+}
+
+.coupon-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.coupon-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #e4e4ea;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.coupon-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4f46e5;
+  background: #eeedfc;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.coupon-ref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  color: #44444d;
+}
+
+.btn-secondary {
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #44444d;
+  border: 1px solid #d8d8de;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
