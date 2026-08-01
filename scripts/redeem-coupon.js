@@ -9,8 +9,11 @@ async function main() {
   const network = process.env.BCH_NETWORK ?? 'chipnet';
   const merchantAddress = process.env.BUSINESS_ADDRESS;
   const customerAddress = process.env.CUSTOMER_ADDRESS;
+  // Use this value verbatim for SDK-level UTXO matching (utxo.token.category
+  // uses "default" display order). The on-chain contract constructor needs
+  // the OPPOSITE byte order — see categoryIdForContract below.
   const categoryId = process.env.COUPON_CATEGORY_ID;
-  const categoryIdReversed = reverseHexBytes(categoryId);
+  const categoryIdForContract = reverseHexBytes(categoryId);
   const transferable = (process.env.TRANSFERABLE ?? 'false').toLowerCase() === 'true';
   const rewardSats = BigInt(process.env.REWARD_SATS ?? '1000');
   const fundingSats = BigInt(process.env.CONTRACT_FUNDING_SATS ?? String(rewardSats + 5000n));
@@ -25,9 +28,14 @@ async function main() {
   const customerPk = Buffer.from(customerSigner.getPublicKey()).toString('hex');
   const artifact = compileFile(path.resolve(process.cwd(), 'contracts', 'CouponRedeem.cash'));
 
+  // 4 constructor args, matching the current contract: businessPk, transferable,
+  // couponCategory, discountValue. ownerPk is no longer a constructor param —
+  // it lives inside each coupon's own NFT commitment instead.
+  // NOTE: couponCategory uses categoryIdForContract (script/raw byte order),
+  // NOT categoryId (SDK/display order) — these are genuinely different values.
   const contract = new Contract(
     artifact,
-    [businessPk, customerPk, transferable, categoryId, rewardSats],
+    [businessPk, transferable, categoryIdForContract, rewardSats],
     { provider },
   );
 
@@ -48,13 +56,17 @@ async function main() {
 
   const customerUtxos = await provider.getUtxos(customerAddress);
   const couponUtxo = customerUtxos.find((utxo) =>
-    utxo.token?.category.toLowerCase() === categoryIdReversed.toLowerCase()
+    utxo.token?.category === categoryId
     && utxo.token.nft?.capability === 'none',
   );
-  if (!couponUtxo) throw new Error(`No immutable coupon NFT for category ${categoryId} found at the customer address.`);
+  if (!couponUtxo) {
+    console.error('\nNo matching coupon found. Coupon-bearing UTXOs at this address:');
+    for (const u of customerUtxos.filter((u) => u.token)) {
+      console.error(`  category: ${u.token.category}  capability: ${u.token.nft?.capability}`);
+    }
+    throw new Error(`No immutable coupon NFT for category ${categoryId} found at the customer address.`);
+  }
 
-  // Field name check: log this once to confirm — some cashscript versions use
-  // `.satoshis`, others `.value`. Use whichever is actually populated.
   const contractInputValue = BigInt(contractUtxo.satoshis ?? contractUtxo.value);
   const merchantChange = contractInputValue - rewardSats - minerFee;
   if (merchantChange < 0n) {
@@ -62,7 +74,7 @@ async function main() {
   }
 
   const tx = await new TransactionBuilder({ provider })
-    // Coupon must be input 0 because CouponRedeem.cash introspects it.
+    // Coupon must be input 0 because CouponRedeem.cash introspects tx.inputs[0] explicitly.
     .addInput(couponUtxo, customerSigner.unlockP2PKH())
     .addInput(contractUtxo, contract.unlock.redeem(businessSigner, customerPk, customerSigner))
     .addOutput({ to: customerAddress, amount: rewardSats })
@@ -78,12 +90,12 @@ async function main() {
   console.log(`Merchant change:  ${merchantChange} sats`);
 }
 
-function reverseHexBytes(hex) {
-  const bytes = hex.match(/.{1,2}/g);
-  return bytes.reverse().join('');
-}
-
 main().catch((error) => {
   console.error(`Coupon redemption failed: ${error.message}`);
   process.exitCode = 1;
 });
+
+function reverseHexBytes(hex) {
+  const bytes = hex.match(/.{1,2}/g);
+  return bytes.reverse().join('');
+}

@@ -1,20 +1,39 @@
 pragma cashscript ^0.13.0;
 
+// Single-use coupon: redemption burns the NFT (no continuing token output),
+// which is the double-redemption protection. `transferable` toggles whether
+// only the original recipient can redeem, or anyone holding the coupon can.
+// Expiry and owner identity are read from the NFT's own commitment, not a
+// constructor constant, so one shared contract address can serve every
+// coupon in this category, each carrying its own expiry date.
+// Commitment layout: bytes4 expiry (little-endian unix timestamp) ++ bytes20 ownerPKH
+//
+// Expected transaction shape:
+//   input 0 = the coupon NFT, held normally in the customer's own wallet (plain P2PKH)
+//   input N = this contract's own pre-funded BCH reward pool (this.activeInputIndex)
+// The coupon is referenced explicitly at index 0 because this contract only
+// guards the BCH reward pool, not the NFT itself.
 contract CouponRedeem(
     pubkey businessPk,
-    pubkey ownerPk,        //if transferable == false
     bool transferable,
     bytes32 couponCategory,
     int discountValue
 ) {
     function redeem(sig businessSig, pubkey redeemerPk, sig redeemerSig) {
         require(checkSig(businessSig, businessPk));
-        if (!transferable) {
-            require(redeemerPk == ownerPk);
-        }
-        require(checkSig(redeemerSig, redeemerPk));
 
         require(tx.inputs[0].tokenCategory == couponCategory);
+
+        bytes commitment = tx.inputs[0].nftCommitment;
+        bytes4 expiryBytes, bytes ownerPKH = commitment.split(4);
+        int expiry = int(expiryBytes);
+
+        require(tx.locktime < expiry); // expiry enforcement, straight from the token itself
+
+        if (!transferable) {
+            require(hash160(redeemerPk) == ownerPKH);
+        }
+        require(checkSig(redeemerSig, redeemerPk));
 
         int minerFee = 1000;
         int inputValue = tx.inputs[this.activeInputIndex].value;
@@ -23,10 +42,12 @@ contract CouponRedeem(
 
         bytes25 merchantLock = new LockingBytecodeP2PKH(hash160(businessPk));
 
+        // Output 0 pays the discount to the redeemer.
+        // Output 1 returns BCH change to merchant.
+        // There is no token output, so the coupon NFT is consumed forever.
         require(tx.outputs.length == 2);
         require(tx.outputs[0].value == discountValue);
         require(tx.outputs[1].value == merchantChange);
         require(tx.outputs[1].lockingBytecode == merchantLock);
     }
-
 }
