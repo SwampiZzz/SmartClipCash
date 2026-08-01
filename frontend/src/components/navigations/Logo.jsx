@@ -1,9 +1,9 @@
+import { Link } from "react-router-dom";
 import logo from "../../assets/logo.png";
 
-export default function Logo() {
-  return (
-    // on click, redirect to home page
-    <a className="flex items-center gap-3" href="/">
+export default function Logo({ clickable = true }) {
+  const content = (
+    <div className="flex items-center gap-3">
       <img
         src={logo}
         alt="SmartClipCash"
@@ -19,6 +19,12 @@ export default function Logo() {
           Bitcoin Cash Rewards
         </p>
       </div>
-    </a>
+    </div>
   );
+
+  if (!clickable) {
+    return content;
+  }
+
+  return <Link to="/">{content}</Link>;
 }
