@@ -1,38 +1,36 @@
 import { Outlet } from "react-router-dom";
 
-import Navbar from "../components/navigations/Navbar.jsx";
-import Sidebar from "../components/navigations/Sidebar.jsx";
+import Sidebar from "../components/navigations/Sidebar";
 
-const merchantLinks = [
+const links = [
   {
     label: "Dashboard",
     path: "/merchant/dashboard",
+    icon: "dashboard",
   },
   {
     label: "Manage Rewards",
     path: "/merchant/manage",
+    icon: "rewards",
   },
   {
     label: "Scan & Redeem",
     path: "/merchant/scan",
+    icon: "scan",
   },
 ];
 
 export default function MerchantLayout() {
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-50">
 
-      <Navbar />
+      {/* Fixed Sidebar */}
+      <Sidebar links={links} />
 
-      <div className="flex">
-
-        <Sidebar links={merchantLinks} />
-
-        <main className="flex-1 p-8">
-          <Outlet />
-        </main>
-
-      </div>
+      {/* Scrollable Content */}
+      <main className="flex-1 overflow-y-auto p-8">
+        <Outlet />
+      </main>
 
     </div>
   );
