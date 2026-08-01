@@ -6,7 +6,6 @@ import { issueStamps } from "../../lib/contract";
 export default function IssuePunchCardModal({ open, reward, onClose, onIssued }) {
   const { wallet, refreshWalletData } = useWallet();
   const [customerAddress, setCustomerAddress] = useState("");
-  const [stamps, setStamps] = useState(1);
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
@@ -24,10 +23,9 @@ export default function IssuePunchCardModal({ open, reward, onClose, onIssued })
         businessAddress: wallet.address,
         customerAddress: customerAddress.trim(),
         category: reward.category,
-        stamps,
+        stamps: 1,
       });
       setCustomerAddress("");
-      setStamps(1);
       refreshWalletData();
       onIssued?.();
       onClose();
@@ -53,9 +51,7 @@ export default function IssuePunchCardModal({ open, reward, onClose, onIssued })
           <label className="block text-sm font-semibold">Customer Address
             <input required value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="bchtest:q..." className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500" />
           </label>
-          <label className="block text-sm font-semibold">Stamps to issue
-            <input type="number" min="1" max={reward.supply} value={stamps} onChange={(event) => setStamps(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500" />
-          </label>
+          <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-800">Each issue action sends exactly 1 stamp.</p>
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button type="button" onClick={onClose} className="rounded-xl border border-slate-300 px-6 py-3 font-medium">Cancel</button>
             <button disabled={loading} className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white disabled:opacity-60">
