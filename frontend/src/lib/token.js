@@ -18,7 +18,7 @@ export async function getStampUtxos(address) {
   return utxos.filter(
     (utxo) =>
       utxo.token &&
-      !utxo.token.nft
+      utxo.token.amount > 0n
   );
 }
 
@@ -152,21 +152,7 @@ export async function getMerchantCoupons(address) {
 export async function getMerchantPunchCards(address) {
   const utxos = await getStampUtxos(address);
 
-  return utxos.map((utxo) => ({
-    txid: utxo.txid,
-    vout: utxo.vout,
-
-    category: utxo.token.category,
-
-    capability:
-      utxo.token.nft?.capability ?? "none",
-
-    supply: Number(utxo.token.amount),
-
-    satoshis: Number(utxo.satoshis),
-
-    utxo,
-  }));
+  return groupPunchCards(utxos, "supply");
 }
 
 /**
@@ -203,18 +189,37 @@ export async function getCustomerCoupons(address) {
 export async function getCustomerPunchCards(address) {
   const utxos = await getStampUtxos(address);
 
-  return utxos.map((utxo) => ({
-    txid: utxo.txid,
-    vout: utxo.vout,
+  return groupPunchCards(utxos, "stamps");
+}
 
-    category: utxo.token.category,
+function groupPunchCards(utxos, amountField) {
+  const groups = new Map();
 
-    stamps: Number(utxo.token.amount),
+  for (const utxo of utxos) {
+    const category = utxo.token.category;
+    const existing = groups.get(category);
+    const amount = Number(utxo.token.amount);
 
-    satoshis: Number(utxo.satoshis),
+    if (existing) {
+      existing[amountField] += amount;
+      existing.satoshis += Number(utxo.satoshis);
+      existing.utxos.push(utxo);
+      existing.hasMintingNft ||= utxo.token.nft?.capability === "minting";
+      continue;
+    }
 
-    utxo,
-  }));
+    groups.set(category, {
+      txid: utxo.txid,
+      vout: utxo.vout,
+      category,
+      [amountField]: amount,
+      satoshis: Number(utxo.satoshis),
+      hasMintingNft: utxo.token.nft?.capability === "minting",
+      utxos: [utxo],
+    });
+  }
+
+  return [...groups.values()];
 }
 
 /**
