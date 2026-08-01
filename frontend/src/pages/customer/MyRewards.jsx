@@ -1,29 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, LoaderCircle, Stamp, TicketPercent } from "lucide-react";
+import { ChevronDown, ChevronUp, Stamp, TicketPercent } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { getCustomerCoupons, getCustomerPunchCards } from "../../lib/token";
-import { getCouponExpiry, redeemPunchCard } from "../../lib/contract";
+import { getCouponExpiry } from "../../lib/contract";
 import { getCouponName, getCouponRewardSats, getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
-import { wallets } from "../../constants/wallets";
-import RedemptionSuccessModal from "../../components/modals/RedemptionSuccessModal";
 import PresentCouponModal from "../../components/modals/PresentCouponModal";
+import PresentPunchCardModal from "../../components/modals/PresentPunchCardModal";
 
 export default function MyRewards() {
   const {
     wallet,
     refreshKey,
-    refreshWalletData,
     transactionHistory,
-    recordTransaction,
   } = useWallet();
   const [coupons, setCoupons] = useState([]);
   const [punchCards, setPunchCards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState("");
   const [showExpired, setShowExpired] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [successTransaction, setSuccessTransaction] = useState(null);
   const [presentedCoupon, setPresentedCoupon] = useState(null);
+  const [presentedPunchCard, setPresentedPunchCard] = useState(null);
 
   const refreshRewards = useCallback(async () => {
     if (!wallet?.address) return;
@@ -60,40 +56,6 @@ export default function MyRewards() {
     }, { activeCoupons: [], archivedCoupons: [] });
   }, [coupons, currentTime]);
 
-  async function handlePunchRedeem(card) {
-    const config = getPunchCardConfig(card.category);
-    const key = `${card.txid}:${card.vout}`;
-    try {
-      setPending(key);
-      const result = await redeemPunchCard({
-        businessWif: wallets.business.wif,
-        businessAddress: wallets.business.address,
-        customerWif: wallet.wif,
-        customerAddress: wallet.address,
-        category: card.category,
-        requiredStamps: config.requiredStamps,
-        rewardValue: config.rewardSats,
-      });
-      const transaction = {
-        txid: result.txid,
-        type: "Punch-card redemption",
-        title: getPunchCardName(card.category),
-        rewardSats: config.rewardSats,
-        stampsBurned: result.stampsBurned,
-      };
-      recordTransaction(transaction);
-      setSuccessTransaction(transaction);
-      refreshWalletData();
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Punch-card redemption failed.");
-    } finally {
-      setPending("");
-    }
-  }
-
-  const isBusy = (item) => pending === `${item.txid}:${item.vout}`;
-
   return (
     <div className="space-y-8">
       <div>
@@ -125,7 +87,7 @@ export default function MyRewards() {
             {punchCards.length ? punchCards.map((card) => {
               const config = getPunchCardConfig(card.category);
               const ready = card.stamps >= config.requiredStamps;
-              return <article key={`${card.txid}-${card.vout}`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><Stamp className="text-blue-600" /><h3 className="mt-4 text-lg font-semibold">{getPunchCardName(card.category)}</h3><p className="mt-2 text-sm text-slate-500">{card.stamps}/{config.requiredStamps} stamps · {config.rewardSats} sats reward</p><button disabled={!ready || Boolean(pending)} onClick={() => handlePunchRedeem(card)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-60">{isBusy(card) && <LoaderCircle size={16} className="animate-spin" />}{ready ? "Redeem punch card" : "More stamps needed"}</button></article>;
+              return <article key={`${card.txid}-${card.vout}`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><Stamp className="text-blue-600" /><h3 className="mt-4 text-lg font-semibold">{getPunchCardName(card.category)}</h3><p className="mt-2 text-sm text-slate-500">{card.stamps}/{config.requiredStamps} stamps &middot; {config.rewardSats} sats reward</p><button onClick={() => setPresentedPunchCard(card)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white">{ready ? "Present completed card" : "Show merchant reference"}</button></article>;
             }) : <Empty label="No punch-card stamps in this wallet." />}
           </div>
         </section>
@@ -137,8 +99,8 @@ export default function MyRewards() {
           </div>
         </section>}
       </>}
-      <RedemptionSuccessModal transaction={successTransaction} onClose={() => setSuccessTransaction(null)} />
       <PresentCouponModal coupon={presentedCoupon} address={wallet?.address} onClose={() => setPresentedCoupon(null)} />
+      <PresentPunchCardModal card={presentedPunchCard} address={wallet?.address} requiredStamps={presentedPunchCard ? getPunchCardConfig(presentedPunchCard.category).requiredStamps : 0} onClose={() => setPresentedPunchCard(null)} />
     </div>
   );
 }
