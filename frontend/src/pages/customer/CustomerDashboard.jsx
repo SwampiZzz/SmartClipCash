@@ -1,138 +1,42 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Stamp, TicketPercent } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
-import { getCustomerSummary } from "../../lib/token";
-
-import {
-  TicketPercent,
-  Stamp,
-  ChevronRight,
-  Clock3,
-} from "lucide-react";
+import { getCustomerPunchCards, getCustomerSummary } from "../../lib/token";
+import { getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
 
 export default function CustomerDashboard() {
-  const { wallet } = useWallet();
-
-  const [summary, setSummary] = useState({
-    coupons: 0,
-    punchCards: 0,
-  });
-
+  const { wallet, refreshKey } = useWallet();
+  const [summary, setSummary] = useState({ coupons: 0, punchCards: 0 });
+  const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboard() {
       if (!wallet?.address) return;
-
       try {
-        const data = await getCustomerSummary(wallet.address);
-        setSummary(data);
-      } catch (err) {
-        console.error(err);
+        const [nextSummary, nextCards] = await Promise.all([
+          getCustomerSummary(wallet.address),
+          getCustomerPunchCards(wallet.address),
+        ]);
+        setSummary(nextSummary);
+        setCards(nextCards);
+      } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }
     }
-
-    loadDashboard();
-  }, [wallet]);
-
-  const redeemables = [
-    {
-      title: "Free Coffee",
-      merchant: "Lumina Café",
-      status:
-        summary.punchCards >= 5
-          ? "Ready to Redeem"
-          : `${summary.punchCards}/5 Stamps`,
-      ready: summary.punchCards >= 5,
-    },
-    {
-      title: "10% Discount Coupon",
-      merchant: "Lumina Café",
-      status:
-        summary.coupons > 0
-          ? "Available"
-          : "No Coupons",
-      ready: summary.coupons > 0,
-    },
-  ];
-
-  const activity = [
-    "Connected to SmartClipCash",
-    "Waiting for blockchain activity...",
-  ];
+    void loadDashboard();
+  }, [wallet, refreshKey]);
 
   return (
     <div className="space-y-8">
-
-      {/* Header */}
-
-      <div>
-
-        <h1 className="text-3xl font-bold text-slate-900">
-          Customer Dashboard
-        </h1>
-
-        <p className="mt-2 text-slate-500">
-          View your blockchain rewards and loyalty progress.
-        </p>
-
-      </div>
-
-      {/* Summary */}
+      <div><h1 className="text-3xl font-bold text-slate-900">Customer Dashboard</h1><p className="mt-2 text-slate-500">Live reward balances from your connected wallet.</p></div>
 
       <div className="grid gap-6 md:grid-cols-2">
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-                Coupons
-              </p>
-
-              <h2 className="mt-2 text-4xl font-bold">
-                {loading ? "--" : summary.coupons}
-              </h2>
-
-            </div>
-
-            <TicketPercent
-              className="text-emerald-600"
-              size={34}
-            />
-
-          </div>
-
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-                Punch Card Stamps
-              </p>
-
-              <h2 className="mt-2 text-4xl font-bold">
-                {loading ? "--" : summary.punchCards}
-              </h2>
-
-            </div>
-
-            <Stamp
-              className="text-emerald-600"
-              size={34}
-            />
-
-          </div>
-
-        </div>
-
+        <SummaryCard label="Active Coupons" value={loading ? "--" : summary.coupons} icon={<TicketPercent className="text-emerald-600" size={34} />} />
+        <SummaryCard label="Punch Card Stamps" value={loading ? "--" : summary.punchCards} icon={<Stamp className="text-emerald-600" size={34} />} />
       </div>
 
       {/* Redeemables */}
@@ -208,31 +112,13 @@ export default function CustomerDashboard() {
         </div>
 
         <div className="space-y-4 p-6">
-
-          {activity.map((item, index) => (
-
-            <div
-              key={index}
-              className="flex items-center gap-4"
-            >
-
-              <Clock3
-                size={18}
-                className="text-slate-400"
-              />
-
-              <p className="text-sm text-slate-700">
-                {item}
-              </p>
-
-            </div>
-
-          ))}
-
+          {loading ? <p className="text-sm text-slate-500">Loading on-chain stamp balances...</p> : cards.length ? cards.map((card) => {
+            const config = getPunchCardConfig(card.category);
+            const progress = Math.min(100, Math.round((card.stamps / config.requiredStamps) * 100));
+            return <div key={card.category} className="rounded-xl bg-slate-50 p-5"><div className="flex items-center justify-between gap-4"><div><h3 className="font-semibold">{getPunchCardName(card.category)}</h3><p className="mt-1 text-sm text-slate-500">{card.stamps}/{config.requiredStamps} stamps · {config.rewardSats} sats reward</p></div><span className={`rounded-full px-3 py-1 text-xs font-semibold ${card.stamps >= config.requiredStamps ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>{card.stamps >= config.requiredStamps ? "Ready" : "In progress"}</span></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-emerald-600" style={{ width: `${progress}%` }} /></div></div>;
+          }) : <p className="text-sm text-slate-500">No punch-card stamps in this wallet.</p>}
         </div>
-
-      </div>
-
+      </section>
     </div>
   );
 }

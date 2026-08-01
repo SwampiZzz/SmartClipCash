@@ -166,11 +166,9 @@ export default function ManageRewards() {
                 Punch Cards
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Loyalty stamp collections stored on-chain.
-              </p>
-
-            </div>
+            <h2 className="text-xl font-semibold">
+              Punch Cards
+            </h2>
 
             <button
               type="button"
@@ -204,7 +202,7 @@ export default function ManageRewards() {
                 </h3>
 
                 <p className="mt-2 text-slate-500">
-                  Create your first punch card to start issuing stamps.
+                  Create a stamp reserve with the genesis CLI, then it will appear here for issuing.
                 </p>
 
               </div>

@@ -138,6 +138,18 @@ export default function RewardCard({
 
             </div>
 
+            <div className="flex items-center justify-between">
+
+              <span className="text-sm text-slate-500">
+                Redemption
+              </span>
+
+              <span className="font-semibold">
+                {reward.required} stamps · {reward.rewardSats} sats
+              </span>
+
+            </div>
+
           </>
         )}
 

@@ -5,6 +5,7 @@ import {
 
 import {
   getCouponName,
+  getPunchCardConfig,
   getPunchCardName,
 } from "./metadata";
 
@@ -48,6 +49,7 @@ export async function getMerchantPunchInventory(
 
     description: "Punch Card",
 
-    required: 5,
+    required: getPunchCardConfig(card.category).requiredStamps,
+    rewardSats: getPunchCardConfig(card.category).rewardSats,
   }));
 }
