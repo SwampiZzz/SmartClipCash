@@ -1,51 +1,65 @@
+import { useEffect, useState } from "react";
+import { useWallet } from "../../hooks/useWallet";
+import { getCustomerSummary } from "../../lib/token";
+
 import {
   TicketPercent,
-  Gift,
   Stamp,
   ChevronRight,
   Clock3,
 } from "lucide-react";
 
 export default function CustomerDashboard() {
-  // TODO:
-  // Replace these with lib/token.js later.
-  const summary = {
-    coupons: 3,
-    vouchers: 1,
-    punchCards: 2,
-  };
+  const { wallet } = useWallet();
+
+  const [summary, setSummary] = useState({
+    coupons: 0,
+    punchCards: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDashboard() {
+      if (!wallet?.address) return;
+
+      try {
+        const data = await getCustomerSummary(wallet.address);
+        setSummary(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboard();
+  }, [wallet]);
 
   const redeemables = [
     {
       title: "Free Coffee",
-      merchant: "Coffee Bean",
-      status: "Ready to Redeem",
-      ready: true,
-    },
-    {
-      title: "Free Croissant",
-      merchant: "Bread Corner",
-      status: "4 / 5 Stamps",
-      ready: false,
+      merchant: "Lumina Café",
+      status:
+        summary.punchCards >= 5
+          ? "Ready to Redeem"
+          : `${summary.punchCards}/5 Stamps`,
+      ready: summary.punchCards >= 5,
     },
     {
       title: "10% Discount Coupon",
-      merchant: "Burger House",
-      status: "Coupon",
-      ready: true,
-    },
-    {
-      title: "Free Burger",
-      merchant: "Burger House",
-      status: "9 / 10 Stamps",
-      ready: false,
+      merchant: "Lumina Café",
+      status:
+        summary.coupons > 0
+          ? "Available"
+          : "No Coupons",
+      ready: summary.coupons > 0,
     },
   ];
 
   const activity = [
-    "Coffee Bean • +1 Stamp",
-    "Bread Corner • Coupon Received",
-    "Burger House • +1 Stamp",
+    "Connected to SmartClipCash",
+    "Waiting for blockchain activity...",
   ];
 
   return (
@@ -60,14 +74,14 @@ export default function CustomerDashboard() {
         </h1>
 
         <p className="mt-2 text-slate-500">
-          View your loyalty rewards and redeemables.
+          View your blockchain rewards and loyalty progress.
         </p>
 
       </div>
 
       {/* Summary */}
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
@@ -80,12 +94,15 @@ export default function CustomerDashboard() {
               </p>
 
               <h2 className="mt-2 text-4xl font-bold">
-                {summary.coupons}
+                {loading ? "--" : summary.coupons}
               </h2>
 
             </div>
 
-            <TicketPercent className="text-emerald-600" size={34} />
+            <TicketPercent
+              className="text-emerald-600"
+              size={34}
+            />
 
           </div>
 
@@ -98,38 +115,19 @@ export default function CustomerDashboard() {
             <div>
 
               <p className="text-sm text-slate-500">
-                Vouchers
+                Punch Card Stamps
               </p>
 
               <h2 className="mt-2 text-4xl font-bold">
-                {summary.vouchers}
+                {loading ? "--" : summary.punchCards}
               </h2>
 
             </div>
 
-            <Gift className="text-emerald-600" size={34} />
-
-          </div>
-
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-                Punch Cards
-              </p>
-
-              <h2 className="mt-2 text-4xl font-bold">
-                {summary.punchCards}
-              </h2>
-
-            </div>
-
-            <Stamp className="text-emerald-600" size={34} />
+            <Stamp
+              className="text-emerald-600"
+              size={34}
+            />
 
           </div>
 
