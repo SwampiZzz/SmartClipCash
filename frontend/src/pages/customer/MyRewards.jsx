@@ -133,7 +133,7 @@ export default function MyRewards() {
         {transactionHistory.length > 0 && <section>
           <h2 className="mb-4 text-xl font-semibold">Transaction History</h2>
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-            {transactionHistory.map((transaction) => <div key={`${transaction.txid}-${transaction.createdAt}`} className="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4 last:border-0"><div className="min-w-0"><p className="font-semibold">{transaction.type}</p><p className="mt-1 truncate font-mono text-xs text-slate-500">{transaction.txid}</p></div><div className="shrink-0 text-right"><p className="font-semibold">{Number(transaction.rewardSats).toLocaleString()} sats</p><p className="mt-1 text-xs text-slate-500">{new Date(transaction.createdAt).toLocaleString()}</p></div></div>)}
+            {transactionHistory.map((transaction) => <div key={`${transaction.txid}-${transaction.createdAt}`} className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"><div className="min-w-0"><p className="font-semibold">{transaction.type}</p><p className="mt-1 truncate font-mono text-xs text-slate-500">{transaction.txid}</p></div><div className="text-left sm:shrink-0 sm:text-right"><p className="font-semibold">{Number(transaction.rewardSats).toLocaleString()} sats</p><p className="mt-1 text-xs text-slate-500">{new Date(transaction.createdAt).toLocaleString()}</p></div></div>)}
           </div>
         </section>}
       </>}

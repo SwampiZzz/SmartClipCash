@@ -24,7 +24,7 @@ export default function Home() {
             Powered by Bitcoin Cash & CashTokens
           </span>
 
-          <h1 className="mt-6 text-5xl font-extrabold leading-tight tracking-tight text-slate-900 lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
             Digital Loyalty Rewards
             <span className="block text-emerald-600">
               Made Simple.

@@ -1,0 +1,50 @@
+.app-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e4e4ea;
+}
+
+.app-nav-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.app-nav-links a {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #44444d;
+  text-decoration: none;
+}
+
+.app-nav-links a.active,
+.app-nav-links a:hover {
+  color: #4f46e5;
+}
+
+.app-nav-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  color: #1c1c22;
+}
+
+.app-nav-wallet {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: #6b6b76;
+}
+
+.layout-guard {
+  max-width: 28rem;
+  margin: 3rem auto;
+  text-align: center;
+  color: #6b6b76;
+  padding: 0 1rem;
+}
+
+.layout-guard a {
+  color: #4f46e5;
+  font-weight: 600;
+}

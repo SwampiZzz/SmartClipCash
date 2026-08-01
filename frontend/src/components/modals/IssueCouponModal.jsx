@@ -65,13 +65,13 @@ export default function IssueCouponModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm">
 
-      <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl">
+      <div className="my-auto w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl sm:rounded-3xl max-h-[calc(100dvh-2rem)]">
 
         {/* Header */}
 
-        <div className="flex items-center justify-between border-b border-slate-200 px-8 py-6">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5 sm:px-8 sm:py-6">
 
           <div>
 
@@ -98,7 +98,7 @@ export default function IssueCouponModal({
 
         <form
           onSubmit={handleIssue}
-          className="space-y-6 p-8"
+          className="space-y-5 p-5 sm:space-y-6 sm:p-8"
         >
 
           {/* Coupon */}
@@ -182,7 +182,7 @@ export default function IssueCouponModal({
 
           {/* Buttons */}
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 
             <button
               type="button"

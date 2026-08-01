@@ -27,21 +27,21 @@ export default function Sidebar({ links }) {
   };
 
   return (
-    <aside className="flex h-screen w-72 flex-col border-r border-slate-200 bg-white shadow-sm">
+    <aside className="fixed inset-x-0 bottom-0 z-40 flex border-t border-slate-200 bg-white shadow-lg md:static md:h-dvh md:w-72 md:shrink-0 md:flex-col md:border-r md:border-t-0 md:shadow-sm">
 
       {/* Logo */}
-      <div className="border-b border-slate-200 px-6 py-5">
+      <div className="hidden border-b border-slate-200 px-6 py-5 md:block">
         <Logo clickable={false} />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 p-5">
+      <nav className="grid flex-1 grid-flow-col auto-cols-fr gap-1 p-2 md:block md:space-y-2 md:p-5">
         {links.map((link) => (
           <NavLink
             key={link.path}
             to={link.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+              `flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-center text-[11px] font-medium transition md:min-h-0 md:flex-row md:justify-start md:gap-3 md:px-4 md:py-3 md:text-left md:text-sm ${
                 isActive
                   ? "bg-emerald-600 text-white shadow"
                   : "text-slate-700 hover:bg-slate-100"
@@ -55,7 +55,7 @@ export default function Sidebar({ links }) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-slate-200 p-5">
+      <div className="hidden border-t border-slate-200 p-5 md:block">
 
         {/* Wallet */}
         <div className="mb-5">

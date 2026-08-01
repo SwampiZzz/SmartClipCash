@@ -7,6 +7,7 @@ import RewardTabs from "../../components/rewards/RewardTabs";
 import RewardCard from "../../components/rewards/RewardCard";
 import IssueCouponModal from "../../components/modals/IssueCouponModal";
 import IssuePunchCardModal from "../../components/modals/IssuePunchCardModal";
+import CreateRewardModal from "../../components/modals/CreateRewardModal";
 
 import {
   getMerchantCouponInventory,
@@ -25,6 +26,7 @@ export default function ManageRewards() {
 
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [selectedPunchCard, setSelectedPunchCard] = useState(null);
+  const [createType, setCreateType] = useState(null);
 
   const refreshInventory = useCallback(async () => {
     if (!wallet?.address) return;
@@ -80,7 +82,7 @@ export default function ManageRewards() {
       {activeTab === "coupons" && (
         <>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
 
@@ -96,7 +98,7 @@ export default function ManageRewards() {
 
             <button
               type="button"
-              onClick={() => alert("Coupon definitions are created by the coupon genesis CLI. This page shows the live minting inventory.")}
+              onClick={() => setCreateType("coupon")}
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
             >
               <Plus size={18} />
@@ -156,15 +158,26 @@ export default function ManageRewards() {
       {activeTab === "punchcards" && (
         <>
 
-          <div>
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+
+              <h2 className="text-xl font-semibold">
+                Punch Cards
+              </h2>
 
             <h2 className="text-xl font-semibold">
               Punch Cards
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Select an on-chain stamp reserve below to issue stamps to a customer.
-            </p>
+            <button
+              type="button"
+              onClick={() => setCreateType("punchcard")}
+              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
+            >
+              <Plus size={18} />
+              New Punch Card
+            </button>
 
           </div>
 
@@ -243,6 +256,12 @@ export default function ManageRewards() {
         reward={selectedPunchCard}
         onClose={() => setSelectedPunchCard(null)}
         onIssued={refreshInventory}
+      />
+      <CreateRewardModal
+        open={createType !== null}
+        type={createType}
+        onClose={() => setCreateType(null)}
+        onCreated={refreshInventory}
       />
 
     </div>

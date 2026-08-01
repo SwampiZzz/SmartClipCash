@@ -39,8 +39,78 @@ export default function CustomerDashboard() {
         <SummaryCard label="Punch Card Stamps" value={loading ? "--" : summary.punchCards} icon={<Stamp className="text-emerald-600" size={34} />} />
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5"><h2 className="text-lg font-semibold">Punch Card Progress</h2><Link to="/customer/rewards" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700">View rewards</Link></div>
+      {/* Redeemables */}
+
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+        <div className="border-b border-slate-200 px-6 py-5">
+
+          <h2 className="text-lg font-semibold">
+            Redeemables
+          </h2>
+
+        </div>
+
+        <div>
+
+          {redeemables.map((reward, index) => (
+
+            <div
+              key={index}
+              className="flex flex-col items-start gap-3 border-b border-slate-100 px-5 py-5 last:border-none sm:flex-row sm:items-center sm:justify-between sm:px-6"
+            >
+
+              <div>
+
+                <h3 className="font-semibold">
+                  {reward.title}
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  {reward.merchant}
+                </p>
+
+              </div>
+
+              <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:gap-5">
+
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    reward.ready
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {reward.status}
+                </span>
+
+                <ChevronRight
+                  size={18}
+                  className="text-slate-400"
+                />
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* Recent Activity */}
+
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+        <div className="border-b border-slate-200 px-6 py-5">
+
+          <h2 className="text-lg font-semibold">
+            Recent Activity
+          </h2>
+
+        </div>
+
         <div className="space-y-4 p-6">
           {loading ? <p className="text-sm text-slate-500">Loading on-chain stamp balances...</p> : cards.length ? cards.map((card) => {
             const config = getPunchCardConfig(card.category);
@@ -51,8 +121,4 @@ export default function CustomerDashboard() {
       </section>
     </div>
   );
-}
-
-function SummaryCard({ label, value, icon }) {
-  return <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-center justify-between"><div><p className="text-sm text-slate-500">{label}</p><h2 className="mt-2 text-4xl font-bold">{value}</h2></div>{icon}</div></div>;
 }

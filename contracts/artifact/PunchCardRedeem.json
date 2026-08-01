@@ -38,7 +38,7 @@
     }
   ],
   "bytecode": "OP_4 OP_ROLL OP_SWAP OP_CHECKSIGVERIFY OP_4 OP_ROLL OP_4 OP_ROLL OP_CHECKSIGVERIFY OP_0 OP_UTXOTOKENCATEGORY OP_OVER OP_EQUALVERIFY OP_0 OP_UTXOTOKENAMOUNT OP_2 OP_PICK OP_GREATERTHANOREQUAL OP_VERIFY OP_0 OP_UTXOTOKENAMOUNT OP_ROT OP_SUB OP_DUP OP_0 OP_GREATERTHAN OP_IF OP_TXOUTPUTCOUNT OP_3 OP_NUMEQUALVERIFY OP_0 OP_OUTPUTTOKENCATEGORY OP_2 OP_PICK OP_EQUALVERIFY OP_0 OP_OUTPUTTOKENAMOUNT OP_OVER OP_NUMEQUALVERIFY OP_1 OP_OUTPUTVALUE OP_3 OP_PICK OP_NUMEQUALVERIFY OP_ELSE OP_TXOUTPUTCOUNT OP_2 OP_NUMEQUALVERIFY OP_0 OP_OUTPUTVALUE OP_3 OP_PICK OP_NUMEQUALVERIFY OP_ENDIF OP_2DROP OP_DROP OP_1",
-  "source": "pragma cashscript ^0.13.0;\r\n\r\ncontract PunchCardRedeem(\r\n    pubkey businessPk,\r\n    bytes32 stampCategory,  \r\n    int requiredStamps,\r\n    int rewardValue         \r\n) {\r\n    function redeem(sig businessSig, pubkey customerPk, sig customerSig) {\r\n        require(checkSig(businessSig, businessPk));\r\n        require(checkSig(customerSig, customerPk)); \r\n\r\n        require(tx.inputs[0].tokenCategory == stampCategory);\n        require(tx.inputs[0].tokenAmount >= requiredStamps);\r\n\r\n        int leftover = tx.inputs[0].tokenAmount - requiredStamps;\r\n\r\n        if (leftover > 0) {\r\n\r\n            require(tx.outputs.length == 3);\r\n            require(tx.outputs[0].tokenCategory == stampCategory);\r\n            require(tx.outputs[0].tokenAmount == leftover);\r\n            require(tx.outputs[1].value == rewardValue);\r\n        } else {\r\n            require(tx.outputs.length == 2);\r\n            require(tx.outputs[0].value == rewardValue);\r\n        }\r\n    }\r\n}\r\n",
+  "source": "pragma cashscript ^0.13.0;\r\n\r\ncontract PunchCardRedeem(\r\n    pubkey businessPk,\r\n    bytes32 stampCategory,  \r\n    int requiredStamps,\r\n    int rewardValue         \r\n) {\r\n    function redeem(sig businessSig, pubkey customerPk, sig customerSig) {\r\n        require(checkSig(businessSig, businessPk));\r\n        require(checkSig(customerSig, customerPk)); \r\n\r\n        require(tx.inputs[0].tokenCategory == stampCategory);\r\n        require(tx.inputs[0].tokenAmount >= requiredStamps);\r\n\r\n        int leftover = tx.inputs[0].tokenAmount - requiredStamps;\r\n\r\n        if (leftover > 0) {\r\n\r\n            require(tx.outputs.length == 3);\r\n            require(tx.outputs[0].tokenCategory == stampCategory);\r\n            require(tx.outputs[0].tokenAmount == leftover);\r\n            require(tx.outputs[1].value == rewardValue);\r\n        } else {\r\n            require(tx.outputs.length == 2);\r\n            require(tx.outputs[0].value == rewardValue);\r\n        }\r\n    }\r\n}\r\n",
   "fingerprint": "e92f85db5e84ce0b697c1550387e7249930c22d4e51eb230dd28c8bc9188d29d",
   "debug": {
     "bytecode": "547a7cad547a547aad00ce788800d05279a26900d07b947600a063c4539d00d152798800d3789d51cc53799d67c4529d00cc53799d686d7551",
@@ -95,5 +95,5 @@
       "enforceLocktimeGuard": true
     }
   },
-  "updatedAt": "2026-08-01T20:57:13.663Z"
+  "updatedAt": "2026-08-01T21:57:41.421Z"
 }
