@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 // Layouts
 import PublicLayout from "../layouts/PublicLayout.jsx";
@@ -9,7 +9,6 @@ import CustomerLayout from "../layouts/CustomerLayout.jsx";
 // Public Pages
 import Home from "../pages/public/Home.jsx";
 import HowItWorks from "../pages/public/HowItWorks.jsx";
-import ConnectWallet from "../pages/public/ConnectWallet.jsx";
 
 // Merchant Pages
 import MerchantDashboard from "../pages/merchant/MerchantDashboard.jsx";
@@ -21,32 +20,29 @@ import CustomerDashboard from "../pages/customer/CustomerDashboard.jsx";
 import MyRewards from "../pages/customer/MyRewards.jsx";
 // import TransferRewards from "../pages/customer/TransferRewards.jsx";
 
-export default function AppRouter() {
+export default function AppRouter({ openWalletModal }) {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/connect-wallet" element={<ConnectWallet />} />
-        </Route>
-
-        {/* Merchant */}
-        <Route element={<MerchantLayout />}>
-          <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
-          <Route path="/merchant/manage" element={<ManageRewards />} />
-          <Route path="/merchant/scan" element={<ScanAndRedeem />} />
-          {/* <Route path="/merchant/settings" element={<MerchantSettings />} /> */}
+    <Routes>
+      {/* Public */}
+      <Route element={<PublicLayout openWalletModal={openWalletModal} />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
       </Route>
 
-        {/* Customer */}
-        <Route element={<CustomerLayout />}>
-          <Route path="/customer/dashboard" element={<CustomerDashboard />} />
-          <Route path="/customer/rewards" element={<MyRewards />} />
-          {/* <Route path="/customer/transfer" element={<TransferRewards />} /> */}
-        </Route>
-      </Routes>
-    </BrowserRouter>
+      {/* Merchant */}
+      <Route element={<MerchantLayout />}>
+        <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
+        <Route path="/merchant/manage" element={<ManageRewards />} />
+        <Route path="/merchant/scan" element={<ScanAndRedeem />} />
+        {/* <Route path="/merchant/settings" element={<MerchantSettings />} /> */}
+    </Route>
+
+      {/* Customer */}
+      <Route element={<CustomerLayout />}>
+        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer/rewards" element={<MyRewards />} />
+        {/* <Route path="/customer/transfer" element={<TransferRewards />} /> */}
+      </Route>
+    </Routes>
   );
 }

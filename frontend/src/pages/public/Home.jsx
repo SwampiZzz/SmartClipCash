@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
+
 import {
   Wallet,
   Gift,
@@ -8,6 +10,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const { openWalletModal } = useOutletContext();
   return (
     <div className="space-y-28 pb-20">
 
@@ -37,7 +40,8 @@ export default function Home() {
           <div className="mt-10 flex flex-wrap gap-4">
 
             <button
-              className="rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700"
+              onClick={openWalletModal}
+              className="rounded-xl outline-2 outline-emerald-600 px-6 py-3 font-semibold text-emerald-600 transition hover:bg-emerald-700 hover:text-white focus:outline-offset-2 focus:outline-emerald-600"
             >
               Connect Wallet
             </button>
