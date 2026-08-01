@@ -1,1 +1,29 @@
-pragma ^0.13.0
+pragma cashscript ^0.13.0;
+
+contract PunchCardRedeem(
+    pubkey businessPk,
+    bytes32 stampCategory,  
+    int requiredStamps,
+    int rewardValue         
+) {
+    function redeem(sig businessSig, pubkey customerPk, sig customerSig) {
+        require(checkSig(businessSig, businessPk));
+        require(checkSig(customerSig, customerPk)); 
+
+        //require(tx.inputs[0].tokenCategory == stampCategory);
+        require(tx.inputs[0].tokenAmount >= requiredStamps);
+
+        int leftover = tx.inputs[0].tokenAmount - requiredStamps;
+
+        if (leftover > 0) {
+
+            require(tx.outputs.length == 3);
+            require(tx.outputs[0].tokenCategory == stampCategory);
+            require(tx.outputs[0].tokenAmount == leftover);
+            require(tx.outputs[1].value == rewardValue);
+        } else {
+            require(tx.outputs.length == 2);
+            require(tx.outputs[0].value == rewardValue);
+        }
+    }
+}
