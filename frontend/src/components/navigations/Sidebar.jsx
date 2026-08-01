@@ -16,7 +16,6 @@ export default function Sidebar({ links }) {
   const navigate = useNavigate();
 
   function handleDisconnect() {
-    localStorage.removeItem("wallet");
     setWallet(null);
     navigate("/");
   }
