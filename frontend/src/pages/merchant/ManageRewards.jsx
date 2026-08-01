@@ -156,28 +156,15 @@ export default function ManageRewards() {
       {activeTab === "punchcards" && (
         <>
 
-          <div className="flex items-center justify-between">
+          <div>
 
-            <div>
+            <h2 className="text-xl font-semibold">
+              Punch Cards
+            </h2>
 
-              <h2 className="text-xl font-semibold">
-                Punch Cards
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Loyalty stamp collections stored on-chain.
-              </p>
-
-            </div>
-
-            <button
-              type="button"
-              onClick={() => alert("Punch-card definitions are created by the stamp genesis CLI. This page shows the live stamp reserve.")}
-              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
-            >
-              <Plus size={18} />
-              New Punch Card
-            </button>
+            <p className="mt-1 text-sm text-slate-500">
+              Select an on-chain stamp reserve below to issue stamps to a customer.
+            </p>
 
           </div>
 
@@ -202,7 +189,7 @@ export default function ManageRewards() {
                 </h3>
 
                 <p className="mt-2 text-slate-500">
-                  Create your first punch card to start issuing stamps.
+                  Create a stamp reserve with the genesis CLI, then it will appear here for issuing.
                 </p>
 
               </div>
