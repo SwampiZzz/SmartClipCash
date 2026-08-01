@@ -1,46 +1,55 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+
+import { useWallet } from "../../hooks/useWallet";
 
 import RewardTabs from "../../components/rewards/RewardTabs";
 import RewardCard from "../../components/rewards/RewardCard";
+import IssueCouponModal from "../../components/modals/IssueCouponModal";
+import IssuePunchCardModal from "../../components/modals/IssuePunchCardModal";
+
+import {
+  getMerchantCouponInventory,
+  getMerchantPunchInventory,
+} from "../../lib/inventory";
 
 export default function ManageRewards() {
+  const { wallet, refreshKey } = useWallet();
+
   const [activeTab, setActiveTab] = useState("coupons");
 
-  // Temporary data until blockchain integration
-  const coupons = [
-    {
-      id: 1,
-      title: "10% Discount",
-      description: "Receive 10% off your purchase.",
-      transferable: true,
-      reward: "10% OFF",
-    },
-    {
-      id: 2,
-      title: "Free Coffee",
-      description: "Redeem one free brewed coffee.",
-      transferable: false,
-      reward: "FREE ITEM",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
 
-  const punchCards = [
-    {
-      id: 1,
-      title: "Coffee Loyalty",
-      description: "Collect 5 stamps and receive a free drink.",
-      required: 5,
-      reward: "Free Coffee",
-    },
-    {
-      id: 2,
-      title: "Burger Club",
-      description: "Collect 8 stamps and receive a free burger.",
-      required: 8,
-      reward: "Free Burger",
-    },
-  ];
+  const [coupons, setCoupons] = useState([]);
+  const [punchCards, setPunchCards] = useState([]);
+
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [selectedPunchCard, setSelectedPunchCard] = useState(null);
+
+  const refreshInventory = useCallback(async () => {
+    if (!wallet?.address) return;
+
+    setLoading(true);
+
+    try {
+      const [couponInventory, punchInventory] =
+        await Promise.all([
+          getMerchantCouponInventory(wallet.address),
+          getMerchantPunchInventory(wallet.address),
+        ]);
+
+      setCoupons(couponInventory);
+      setPunchCards(punchInventory);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [wallet]);
+
+  useEffect(() => {
+    void Promise.resolve().then(refreshInventory);
+  }, [refreshInventory, refreshKey]);
 
   return (
     <div className="space-y-8">
@@ -66,10 +75,9 @@ export default function ManageRewards() {
         onChange={setActiveTab}
       />
 
-      {/* Coupons */}
+      {/* ================= COUPONS ================= */}
 
       {activeTab === "coupons" && (
-
         <>
 
           <div className="flex items-center justify-between">
@@ -81,12 +89,14 @@ export default function ManageRewards() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Issue one-time NFT coupons to customers.
+                One-time redeemable NFT coupons.
               </p>
 
             </div>
 
             <button
+              type="button"
+              onClick={() => alert("Coupon definitions are created by the coupon genesis CLI. This page shows the live minting inventory.")}
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
             >
               <Plus size={18} />
@@ -97,26 +107,53 @@ export default function ManageRewards() {
 
           <div className="grid gap-6 lg:grid-cols-2">
 
-            {coupons.map((coupon) => (
+            {loading ? (
 
-              <RewardCard
-                key={coupon.id}
-                type="coupon"
-                reward={coupon}
-              />
+              <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-12 text-center">
 
-            ))}
+                <p className="text-slate-500">
+                  Loading coupons...
+                </p>
+
+              </div>
+
+            ) : coupons.length === 0 ? (
+
+              <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+
+                <h3 className="text-lg font-semibold">
+                  No Coupons Found
+                </h3>
+
+                <p className="mt-2 text-slate-500">
+                  Create your first coupon NFT to start issuing rewards.
+                </p>
+
+              </div>
+
+            ) : (
+
+              coupons.map((coupon) => (
+
+                <RewardCard
+                  key={`${coupon.txid}-${coupon.vout}`}
+                  type="coupon"
+                  reward={coupon}
+                  onIssue={setSelectedCoupon}
+                />
+
+              ))
+
+            )}
 
           </div>
 
         </>
-
       )}
 
-      {/* Punch Cards */}
+      {/* ================= PUNCH CARDS ================= */}
 
       {activeTab === "punchcards" && (
-
         <>
 
           <div className="flex items-center justify-between">
@@ -128,12 +165,14 @@ export default function ManageRewards() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Reward loyal customers with blockchain stamps.
+                Loyalty stamp collections stored on-chain.
               </p>
 
             </div>
 
             <button
+              type="button"
+              onClick={() => alert("Punch-card definitions are created by the stamp genesis CLI. This page shows the live stamp reserve.")}
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
             >
               <Plus size={18} />
@@ -144,23 +183,51 @@ export default function ManageRewards() {
 
           <div className="grid gap-6 lg:grid-cols-2">
 
-            {punchCards.map((card) => (
+            {loading ? (
 
-              <RewardCard
-                key={card.id}
-                type="punchcard"
-                reward={card}
-              />
+              <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-12 text-center">
 
-            ))}
+                <p className="text-slate-500">
+                  Loading punch cards...
+                </p>
+
+              </div>
+
+            ) : punchCards.length === 0 ? (
+
+              <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+
+                <h3 className="text-lg font-semibold">
+                  No Punch Cards Found
+                </h3>
+
+                <p className="mt-2 text-slate-500">
+                  Create your first punch card to start issuing stamps.
+                </p>
+
+              </div>
+
+            ) : (
+
+              punchCards.map((card) => (
+
+                <RewardCard
+                  key={card.category}
+                  type="punchcard"
+                  reward={card}
+                  onIssue={setSelectedPunchCard}
+                />
+
+              ))
+
+            )}
 
           </div>
 
         </>
-
       )}
 
-      {/* Vouchers */}
+      {/* ================= VOUCHERS ================= */}
 
       {activeTab === "vouchers" && (
 
@@ -171,13 +238,25 @@ export default function ManageRewards() {
           </h2>
 
           <p className="mt-3 text-slate-500">
-            Voucher contracts are still under development and will be
-            available in a future update.
+            Voucher contracts are still under development and will be available in a future update.
           </p>
 
         </div>
 
       )}
+
+      <IssueCouponModal
+        open={selectedCoupon !== null}
+        reward={selectedCoupon}
+        onClose={() => setSelectedCoupon(null)}
+        onIssued={refreshInventory}
+      />
+      <IssuePunchCardModal
+        open={selectedPunchCard !== null}
+        reward={selectedPunchCard}
+        onClose={() => setSelectedPunchCard(null)}
+        onIssued={refreshInventory}
+      />
 
     </div>
   );

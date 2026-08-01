@@ -1,12 +1,6 @@
-import { ElectrumNetworkProvider } from "cashscript";
+import { getProvider } from "./contract";
 
-import {
-  NETWORK,
-  STAMP_CATEGORY,
-  COUPON_CATEGORY,
-} from "../config/appConfig";
-
-const provider = new ElectrumNetworkProvider(NETWORK);
+const provider = getProvider();
 
 /**
  * Returns every UTXO owned by an address.
@@ -24,8 +18,7 @@ export async function getStampUtxos(address) {
   return utxos.filter(
     (utxo) =>
       utxo.token &&
-      utxo.token.category.toLowerCase() ===
-        STAMP_CATEGORY.toLowerCase()
+      !utxo.token.nft
   );
 }
 
@@ -38,8 +31,7 @@ export async function getCouponUtxos(address) {
   return utxos.filter(
     (utxo) =>
       utxo.token &&
-      utxo.token.category.toLowerCase() ===
-        COUPON_CATEGORY.toLowerCase()
+      Boolean(utxo.token.nft)
   );
 }
 
@@ -124,6 +116,126 @@ export async function getMerchantSummary(address) {
   return {
     stamps: Number(stamps),
     coupons,
-    balance: Number(balance),
+    balance,
   };
+}
+
+/**
+ * Returns every coupon NFT owned by the merchant.
+ */
+export async function getMerchantCoupons(address) {
+  const utxos = await getCouponUtxos(address);
+
+  return utxos.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+
+    category: utxo.token.category,
+
+    commitment:
+      utxo.token.nft?.commitment ?? "",
+
+    capability:
+      utxo.token.nft?.capability ?? "none",
+
+    amount: Number(utxo.token.amount),
+
+    satoshis: Number(utxo.satoshis),
+
+    utxo,
+  }));
+}
+
+/**
+ * Returns every punch card reserve owned by the merchant.
+ */
+export async function getMerchantPunchCards(address) {
+  const utxos = await getStampUtxos(address);
+
+  return utxos.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+
+    category: utxo.token.category,
+
+    capability:
+      utxo.token.nft?.capability ?? "none",
+
+    supply: Number(utxo.token.amount),
+
+    satoshis: Number(utxo.satoshis),
+
+    utxo,
+  }));
+}
+
+/**
+ * Coupons owned by a customer.
+ */
+export async function getCustomerCoupons(address) {
+  const utxos = await getCouponUtxos(address);
+
+  return utxos.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+
+    category: utxo.token.category,
+
+    commitment:
+      utxo.token.nft?.commitment ?? "",
+
+    capability:
+      utxo.token.nft?.capability ?? "none",
+
+    amount: Number(utxo.token.amount),
+
+    satoshis: Number(utxo.satoshis),
+
+    utxo,
+  }));
+}
+
+/**
+ * Punch card balances owned by a customer.
+ */
+export async function getCustomerPunchCards(address) {
+  const utxos = await getStampUtxos(address);
+
+  return utxos.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+
+    category: utxo.token.category,
+
+    stamps: Number(utxo.token.amount),
+
+    satoshis: Number(utxo.satoshis),
+
+    utxo,
+  }));
+}
+
+/**
+ * Returns every CashToken owned by an address.
+ */
+export async function getTokenInventory(address) {
+  const utxos = await getWalletUtxos(address);
+
+  return utxos.filter((utxo) => utxo.token);
+}
+
+/**
+ * Returns every UTXO matching a category.
+ */
+export async function getTokensByCategory(
+  address,
+  category
+) {
+  const utxos = await getTokenInventory(address);
+
+  return utxos.filter(
+    (utxo) =>
+      utxo.token.category.toLowerCase() ===
+      category.toLowerCase()
+  );
 }

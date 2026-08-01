@@ -17,6 +17,11 @@ export function WalletProvider({ children }) {
       return null;
     }
   });
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  function refreshWalletData() {
+    setRefreshKey((current) => current + 1);
+  }
 
   // Keep localStorage synchronized with wallet state
   useEffect(() => {
@@ -32,6 +37,8 @@ export function WalletProvider({ children }) {
       value={{
         wallet,
         setWallet,
+        refreshKey,
+        refreshWalletData,
       }}
     >
       {children}

@@ -10,14 +10,10 @@ import {
   CircleDollarSign,
 } from "lucide-react";
 
-import {
-  NETWORK,
-  STAMP_CATEGORY,
-  COUPON_CATEGORY,
-} from "../../config/appConfig";
+import { NETWORK } from "../../config/appConfig";
 
 export default function MerchantDashboard() {
-  const { wallet } = useWallet();
+  const { wallet, refreshKey } = useWallet();
 
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +38,7 @@ export default function MerchantDashboard() {
     }
 
     loadDashboard();
-  }, [wallet]);
+  }, [wallet, refreshKey]);
 
   return (
     <div className="space-y-8">
@@ -130,9 +126,7 @@ export default function MerchantDashboard() {
               </p>
 
               <h2 className="mt-2 text-4xl font-bold">
-                {loading
-                  ? "--"
-                  : `${summary.balance.toLocaleString()} sats`}
+                {loading ? "--" : `${summary.balance.toLocaleString()} sats`}
               </h2>
 
             </div>
@@ -192,44 +186,11 @@ export default function MerchantDashboard() {
 
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-
-          <div className="border-b border-slate-200 px-6 py-5">
-
-            <h2 className="font-semibold">
-              Token Categories
-            </h2>
-
-          </div>
-
-          <div className="space-y-5 p-6">
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-                Stamp Category
-              </p>
-
-              <p className="mt-1 truncate font-mono text-xs">
-                {STAMP_CATEGORY}
-              </p>
-
-            </div>
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-                Coupon Category
-              </p>
-
-              <p className="mt-1 truncate font-mono text-xs">
-                {COUPON_CATEGORY}
-              </p>
-
-            </div>
-
-          </div>
-
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="font-semibold">Live inventory</h2>
+          <p className="mt-3 text-sm text-slate-500">
+            Token categories and balances are read from the connected wallet’s UTXOs.
+          </p>
         </div>
 
       </div>
