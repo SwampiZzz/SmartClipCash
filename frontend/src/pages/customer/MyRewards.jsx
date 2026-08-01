@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, LoaderCircle, Stamp, TicketPercent } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { getCustomerCoupons, getCustomerPunchCards } from "../../lib/token";
-import { getCouponExpiry, redeemCoupon, redeemPunchCard } from "../../lib/contract";
+import { getCouponExpiry, redeemPunchCard } from "../../lib/contract";
 import { getCouponName, getCouponRewardSats, getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
 import { wallets } from "../../constants/wallets";
 import RedemptionSuccessModal from "../../components/modals/RedemptionSuccessModal";
+import PresentCouponModal from "../../components/modals/PresentCouponModal";
 
 export default function MyRewards() {
   const {
@@ -22,6 +23,7 @@ export default function MyRewards() {
   const [showExpired, setShowExpired] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [successTransaction, setSuccessTransaction] = useState(null);
+  const [presentedCoupon, setPresentedCoupon] = useState(null);
 
   const refreshRewards = useCallback(async () => {
     if (!wallet?.address) return;
@@ -57,37 +59,6 @@ export default function MyRewards() {
       return result;
     }, { activeCoupons: [], archivedCoupons: [] });
   }, [coupons, currentTime]);
-
-  async function handleCouponRedeem(coupon) {
-    const key = `${coupon.txid}:${coupon.vout}`;
-    try {
-      setPending(key);
-      const result = await redeemCoupon({
-        businessWif: wallets.business.wif,
-        businessAddress: wallets.business.address,
-        customerWif: wallet.wif,
-        customerAddress: wallet.address,
-        category: coupon.category,
-        discountValue: getCouponRewardSats(coupon.category),
-        couponTxid: coupon.txid,
-        couponVout: coupon.vout,
-      });
-      const transaction = {
-        txid: result.txid,
-        type: "Coupon redemption",
-        title: getCouponName(coupon.category, coupon.commitment),
-        rewardSats: getCouponRewardSats(coupon.category),
-      };
-      recordTransaction(transaction);
-      setSuccessTransaction(transaction);
-      refreshWalletData();
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Coupon redemption failed.");
-    } finally {
-      setPending("");
-    }
-  }
 
   async function handlePunchRedeem(card) {
     const config = getPunchCardConfig(card.category);
@@ -134,7 +105,7 @@ export default function MyRewards() {
         <section>
           <h2 className="mb-4 text-xl font-semibold">Active Coupons</h2>
           <div className="grid gap-5 lg:grid-cols-2">
-            {activeCoupons.length ? activeCoupons.map((coupon) => <CouponCard key={`${coupon.txid}-${coupon.vout}`} coupon={coupon} busy={isBusy(coupon)} onRedeem={handleCouponRedeem} />) : <Empty label="No active coupons in this wallet." />}
+            {activeCoupons.length ? activeCoupons.map((coupon) => <CouponCard key={`${coupon.txid}-${coupon.vout}`} coupon={coupon} onPresent={setPresentedCoupon} />) : <Empty label="No active coupons in this wallet." />}
           </div>
         </section>
 
@@ -167,12 +138,13 @@ export default function MyRewards() {
         </section>}
       </>}
       <RedemptionSuccessModal transaction={successTransaction} onClose={() => setSuccessTransaction(null)} />
+      <PresentCouponModal coupon={presentedCoupon} address={wallet?.address} onClose={() => setPresentedCoupon(null)} />
     </div>
   );
 }
 
-function CouponCard({ coupon, busy, onRedeem }) {
-  return <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><TicketPercent className="text-emerald-600" /><h3 className="mt-4 text-lg font-semibold">{getCouponName(coupon.category, coupon.commitment)}</h3><p className="mt-2 text-sm text-slate-500">One-time NFT · {getCouponRewardSats(coupon.category)} sats reward</p><p className="mt-1 text-xs text-slate-500">Expires {new Date(coupon.expiry * 1000).toLocaleString()}</p><button disabled={busy} onClick={() => onRedeem(coupon)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-60">{busy && <LoaderCircle size={16} className="animate-spin" />}Redeem coupon</button></article>;
+function CouponCard({ coupon, onPresent }) {
+  return <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><TicketPercent className="text-emerald-600" /><h3 className="mt-4 text-lg font-semibold">{getCouponName(coupon.category, coupon.commitment)}</h3><p className="mt-2 text-sm text-slate-500">One-time NFT &middot; {getCouponRewardSats(coupon.category)} sats reward</p><p className="mt-1 text-xs text-slate-500">Expires {new Date(coupon.expiry * 1000).toLocaleString()}</p><button onClick={() => onPresent(coupon)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white">Present to merchant</button></article>;
 }
 
 function ArchivedCouponCard({ coupon }) {
