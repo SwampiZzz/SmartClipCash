@@ -76,11 +76,11 @@ export default function IssueCouponModal({
           <div>
 
             <h2 className="text-2xl font-bold">
-              Issue Coupon
+              Issue Coupon/Voucher
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Send a coupon NFT to a customer.
+              Send a coupon/voucher NFT to a customer.
             </p>
 
           </div>
@@ -106,7 +106,7 @@ export default function IssueCouponModal({
           <div>
 
             <label className="mb-2 block text-sm font-semibold">
-              Coupon
+              Coupon/Voucher
             </label>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -203,7 +203,7 @@ export default function IssueCouponModal({
                 />
               )}
 
-              Issue Coupon
+              Issue Coupon/Voucher
             </button>
 
           </div>

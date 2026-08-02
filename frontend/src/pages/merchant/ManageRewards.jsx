@@ -87,11 +87,11 @@ export default function ManageRewards() {
             <div>
 
               <h2 className="text-xl font-semibold">
-                Coupons
+                Coupons/Vouchers
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                One-time redeemable NFT coupons.
+                One-time redeemable NFT coupons/vouchers.
               </p>
 
             </div>
@@ -102,7 +102,7 @@ export default function ManageRewards() {
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
             >
               <Plus size={18} />
-              New Coupon
+              New Coupon/Voucher
             </button>
 
           </div>
@@ -114,7 +114,7 @@ export default function ManageRewards() {
               <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-12 text-center">
 
                 <p className="text-slate-500">
-                  Loading coupons...
+                  Loading coupons/vouchers...
                 </p>
 
               </div>
@@ -124,11 +124,11 @@ export default function ManageRewards() {
               <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
 
                 <h3 className="text-lg font-semibold">
-                  No Coupons Found
+                  No Coupons/Vouchers Found
                 </h3>
 
                 <p className="mt-2 text-slate-500">
-                  Create your first coupon NFT to start issuing rewards.
+                  Create your first coupon/voucher NFT to start issuing rewards.
                 </p>
 
               </div>
@@ -212,7 +212,8 @@ export default function ManageRewards() {
                   key={card.category}
                   type="punchcard"
                   reward={card}
-                  onIssue={setSelectedPunchCard}
+                  onIssuePunchCard={(reward) => setSelectedPunchCard({ reward, mode: "card" })}
+                  onIssueStamp={(reward) => setSelectedPunchCard({ reward, mode: "stamp" })}
                 />
 
               ))
@@ -224,24 +225,6 @@ export default function ManageRewards() {
         </>
       )}
 
-      {/* ================= VOUCHERS ================= */}
-
-      {activeTab === "vouchers" && (
-
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
-
-          <h2 className="text-2xl font-semibold text-slate-700">
-            Vouchers
-          </h2>
-
-          <p className="mt-3 text-slate-500">
-            Voucher contracts are still under development and will be available in a future update.
-          </p>
-
-        </div>
-
-      )}
-
       <IssueCouponModal
         open={selectedCoupon !== null}
         reward={selectedCoupon}
@@ -250,7 +233,8 @@ export default function ManageRewards() {
       />
       <IssuePunchCardModal
         open={selectedPunchCard !== null}
-        reward={selectedPunchCard}
+        reward={selectedPunchCard?.reward}
+        mode={selectedPunchCard?.mode}
         onClose={() => setSelectedPunchCard(null)}
         onIssued={refreshInventory}
       />

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, LoaderCircle, X } from "lucide-react";
-import { parseCouponReference } from "../../lib/redemptionReference";
+import { parseRedemptionReference } from "../../lib/redemptionReference";
 
 export default function ScanCouponQrModal({ open, onClose, onScan }) {
   const videoRef = useRef(null);
@@ -22,8 +22,8 @@ export default function ScanCouponQrModal({ open, onClose, onScan }) {
         (result) => {
           if (!result || handledRef.current) return;
           const value = result.getText();
-          if (!parseCouponReference(value)) {
-            setError("That QR code is not a valid SmartClipCash coupon.");
+          if (!parseRedemptionReference(value)) {
+            setError("That QR code is not a valid SmartClipCash reward reference.");
             return;
           }
           handledRef.current = true;

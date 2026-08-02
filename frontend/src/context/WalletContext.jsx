@@ -3,6 +3,12 @@ import { createContext, useEffect, useState } from "react";
 // eslint-disable-next-line react-refresh/only-export-components
 export const WalletContext = createContext(null);
 
+const TRANSACTION_HISTORY_KEY = "transactionHistoryByWallet";
+
+function getHistoryKey(wallet) {
+  return wallet?.address?.toLowerCase() ?? null;
+}
+
 export function WalletProvider({ children }) {
 
   // Load saved wallet once on app startup
@@ -18,23 +24,31 @@ export function WalletProvider({ children }) {
     }
   });
   const [refreshKey, setRefreshKey] = useState(0);
-  const [transactionHistory, setTransactionHistory] = useState(() => {
+  const [transactionHistoryByWallet, setTransactionHistoryByWallet] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("transactionHistory") ?? "[]");
+      return JSON.parse(localStorage.getItem(TRANSACTION_HISTORY_KEY) ?? "{}");
     } catch {
-      return [];
+      return {};
     }
   });
+
+  const transactionHistory = transactionHistoryByWallet[getHistoryKey(wallet)] ?? [];
 
   function refreshWalletData() {
     setRefreshKey((current) => current + 1);
   }
 
   function recordTransaction(transaction) {
-    setTransactionHistory((history) => [
-      { ...transaction, createdAt: new Date().toISOString() },
-      ...history,
-    ].slice(0, 25));
+    const historyKey = getHistoryKey(wallet);
+    if (!historyKey) return;
+
+    setTransactionHistoryByWallet((historyByWallet) => ({
+      ...historyByWallet,
+      [historyKey]: [
+        { ...transaction, createdAt: new Date().toISOString() },
+        ...(historyByWallet[historyKey] ?? []),
+      ].slice(0, 25),
+    }));
   }
 
   // Keep localStorage synchronized with wallet state
@@ -47,8 +61,8 @@ export function WalletProvider({ children }) {
   }, [wallet]);
 
   useEffect(() => {
-    localStorage.setItem("transactionHistory", JSON.stringify(transactionHistory));
-  }, [transactionHistory]);
+    localStorage.setItem(TRANSACTION_HISTORY_KEY, JSON.stringify(transactionHistoryByWallet));
+  }, [transactionHistoryByWallet]);
 
   return (
     <WalletContext.Provider
