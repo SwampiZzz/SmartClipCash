@@ -37,6 +37,7 @@ export function getProvider() {
 
 const MINER_FEE = 1000n;
 const TOKEN_OUTPUT_SATOSHIS = 1000n;
+const GENESIS_SEED_SATOSHIS = 2000n;
 
 /**
  * ------------------------------------------------------------------
@@ -209,18 +210,44 @@ export async function createRewardCategory({
 
   const signer = createSigner(businessWif);
   const utxos = await provider.getUtxos(businessAddress);
-  const genesisInput = utxos.find((utxo) => !utxo.token && utxo.vout === 0);
+  const bchUtxos = utxos.filter((utxo) => !utxo.token);
+  let genesisInput = bchUtxos.find((utxo) => utxo.vout === 0);
+  let preparationTxid = null;
 
   if (!genesisInput) {
-    throw new Error(
-      "No eligible genesis coin found. Send a fresh BCH payment to this merchant wallet so it receives an output at index 0, then try again.",
-    );
+    const available = bchUtxos.reduce((total, utxo) => total + utxo.satoshis, 0n);
+    if (available < GENESIS_SEED_SATOSHIS + MINER_FEE) {
+      throw new Error(
+        `The merchant needs at least ${GENESIS_SEED_SATOSHIS + MINER_FEE} sats in BCH-only coins to prepare a new reward category.`,
+      );
+    }
+
+    // A CashToken category must be seeded by an outpoint at vout 0. If the
+    // wallet only has change outputs, first create a small BCH-only output at
+    // index 0, then spend it immediately as the genesis input.
+    const preparation = await new TransactionBuilder({ provider })
+      .addInputs(bchUtxos, signer.unlockP2PKH())
+      .addOutput({
+        to: businessAddress,
+        amount: GENESIS_SEED_SATOSHIS,
+      })
+      .addBchChangeOutputIfNeeded({ to: businessAddress, feeRate: 1 })
+      .send();
+
+    preparationTxid = preparation.txid;
+    genesisInput = {
+      txid: preparation.txid,
+      vout: 0,
+      satoshis: GENESIS_SEED_SATOSHIS,
+    };
   }
 
   const category = genesisInput.txid;
-  const fundingInputs = utxos.filter(
-    (utxo) => !utxo.token && utxo !== genesisInput,
-  );
+  // Existing BCH inputs can fund genesis only when they were not already
+  // consumed by the preparation transaction above.
+  const fundingInputs = preparationTxid
+    ? []
+    : bchUtxos.filter((utxo) => utxo !== genesisInput);
   const transaction = new TransactionBuilder({ provider })
     // This must remain the first input: its outpoint defines the category.
     .addInput(genesisInput, signer.unlockP2PKH());
@@ -240,7 +267,13 @@ export async function createRewardCategory({
     .addBchChangeOutputIfNeeded({ to: businessAddress, feeRate: 1 })
     .send();
 
-  return { txid: tx.txid, category, type, initialSupply: Number(supply) };
+  return {
+    txid: tx.txid,
+    category,
+    type,
+    initialSupply: Number(supply),
+    preparationTxid,
+  };
 }
 
 /**

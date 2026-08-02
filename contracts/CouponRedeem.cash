@@ -1,18 +1,5 @@
 pragma cashscript ^0.13.0;
 
-// Single-use coupon: redemption burns the NFT (no continuing token output),
-// which is the double-redemption protection. `transferable` toggles whether
-// only the original recipient can redeem, or anyone holding the coupon can.
-// Expiry and owner identity are read from the NFT's own commitment, not a
-// constructor constant, so one shared contract address can serve every
-// coupon in this category, each carrying its own expiry date.
-// Commitment layout: bytes4 expiry (little-endian unix timestamp) ++ bytes20 ownerPKH
-//
-// Expected transaction shape:
-//   input 0 = the coupon NFT, held normally in the customer's own wallet (plain P2PKH)
-//   input N = this contract's own pre-funded BCH reward pool (this.activeInputIndex)
-// The coupon is referenced explicitly at index 0 because this contract only
-// guards the BCH reward pool, not the NFT itself.
 contract CouponRedeem(
     pubkey businessPk,
     bool transferable,
