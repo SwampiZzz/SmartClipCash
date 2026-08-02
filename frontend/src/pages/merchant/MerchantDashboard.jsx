@@ -219,7 +219,7 @@ export default function MerchantDashboard() {
           </p>
 
           <p className="mt-2 text-sm text-slate-500">
-            Issuing stamps, coupons and redemptions will appear here.
+            Issuing stamps, coupons/vouchers and redemptions will appear here.
           </p>
 
         </div>

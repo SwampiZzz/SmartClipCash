@@ -1,7 +1,6 @@
 import {
   TicketPercent,
   Stamp,
-  Gift,
   ArrowRight,
   BadgeCheck,
 } from "lucide-react";
@@ -17,7 +16,7 @@ export default function RewardCard({
     coupon: {
       icon: <TicketPercent size={26} />,
       color: "bg-emerald-100 text-emerald-600",
-      button: "Issue Coupon",
+      button: "Issue Coupon/Voucher",
     },
 
     punchcard: {
@@ -26,11 +25,6 @@ export default function RewardCard({
       button: "Issue Stamp",
     },
 
-    voucher: {
-      icon: <Gift size={26} />,
-      color: "bg-amber-100 text-amber-600",
-      button: "Issue Voucher",
-    },
   };
 
   const current = config[type];
@@ -155,22 +149,6 @@ export default function RewardCard({
           </>
         )}
 
-        {type === "voucher" && (
-
-          <div className="flex items-center justify-between">
-
-            <span className="text-sm text-slate-500">
-              Status
-            </span>
-
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs">
-              Coming Soon
-            </span>
-
-          </div>
-
-        )}
-
       </div>
 
       {/* Footer */}
@@ -192,7 +170,7 @@ export default function RewardCard({
           onClick={() => onIssue?.(reward)}
           className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {canIssue ? current.button : "Issued Coupon"}
+          {canIssue ? current.button : "Issued Coupon/Voucher"}
           <ArrowRight size={16} />
         </button>}
 

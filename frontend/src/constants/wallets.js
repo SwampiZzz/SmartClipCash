@@ -4,13 +4,13 @@ export const wallets = {
     name: "Demo Merchant",
 
     address:
-      "bchtest:qrcdyfeuuqlzjvh4w3h3wrm70rqxqcp9252ynmtfs5",
+      "bchtest:zqmzcut8sgfrgmtglp8s9qg9u2j44ywh6qf6g933zz",
 
     wif:
-      "cSMhzT2YGmF6FDcXX4FMnudwCkoDtLnLVhh4aJXCqKEuHTdjeNLP",
+      "cRVhPGtrSwhS83TYS6xSSeqx38ABgq2kfeqXcM6YvkGJ1gPpjnVr",
 
     pubkeyHex:
-      "02247803e3335978069fbd9f93112a5873e1f26902522decc9fec22def6c23dac0",
+      "0363de1b1503f75f7358851a0446de6be76e46e3bc67c705042bea17354cf37bdf",
   },
 
   customer: {
@@ -18,12 +18,12 @@ export const wallets = {
     name: "Demo Customer",
 
     address:
-      "bchtest:qp64g4ujuvh67uma87v4g7yp2zt5gs9say8qe4nhh4",
+      "bchtest:zq34zlvyyxemsdfttf83cphk55g6unan6qcaw9p99m",
 
     wif:
-      "cNiVPaUiJFmB3bxstosDE8wUTjwSY1TVvxUh7GKHneqxNAaXzB9s",
+      "cT3RvqWUXhqdwF1iLNAQRNaJpfYaFQD1JzF2QfH2A8M3eeSoj3VM",
 
     pubkeyHex:
-      "0218ae700192f24e5f38a3e41c5f32ef2efd9a6cf8cab1e2660daebfb0503d71cf",
+      "0224eec48af6dd11fa5203b23dcef1fc08dfb62402e6055cd2a024b5f54c87ecd0",
   },
 };
