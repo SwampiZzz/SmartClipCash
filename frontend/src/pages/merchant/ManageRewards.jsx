@@ -8,6 +8,7 @@ import RewardCard from "../../components/rewards/RewardCard";
 import IssueCouponModal from "../../components/modals/IssueCouponModal";
 import IssuePunchCardModal from "../../components/modals/IssuePunchCardModal";
 import CreateRewardModal from "../../components/modals/CreateRewardModal";
+import { useFeedback } from "../../hooks/useFeedback";
 
 import {
   getMerchantCouponInventory,
@@ -16,6 +17,7 @@ import {
 
 export default function ManageRewards() {
   const { wallet, refreshKey } = useWallet();
+  const { showFeedback } = useFeedback();
 
   const [activeTab, setActiveTab] = useState("coupons");
 
@@ -44,10 +46,11 @@ export default function ManageRewards() {
       setPunchCards(punchInventory);
     } catch (err) {
       console.error(err);
+      showFeedback({ type: "error", title: "Inventory unavailable", message: err.message || "Unable to load the merchant reward inventory." });
     } finally {
       setLoading(false);
     }
-  }, [wallet]);
+  }, [wallet, showFeedback]);
 
   useEffect(() => {
     void Promise.resolve().then(refreshInventory);

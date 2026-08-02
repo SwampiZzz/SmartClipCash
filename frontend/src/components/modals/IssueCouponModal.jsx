@@ -3,6 +3,7 @@ import { X, LoaderCircle } from "lucide-react";
 
 import { useWallet } from "../../hooks/useWallet";
 import { issueCoupon } from "../../lib/contract";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function IssueCouponModal({
   open,
@@ -11,6 +12,7 @@ export default function IssueCouponModal({
   onIssued,
 }) {
   const { wallet, refreshWalletData } = useWallet();
+  const { showFeedback } = useFeedback();
 
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerPubKey, setCustomerPubKey] = useState("");
@@ -23,16 +25,16 @@ export default function IssueCouponModal({
     e.preventDefault();
 
     if (!customerAddress.trim()) {
-      alert("Customer address is required.");
+      showFeedback({ type: "error", title: "Customer required", message: "Customer address is required." });
       return;
     }
 
     if (!/^(02|03)[0-9a-fA-F]{64}$/.test(customerPubKey.trim())) {
-      alert("Enter the customer's 33-byte compressed public key.");
+      showFeedback({ type: "error", title: "Invalid public key", message: "Enter the customer's 33-byte compressed public key." });
       return;
     }
     if (!Number.isInteger(Number(expiryMinutes)) || Number(expiryMinutes) < 1) {
-      alert("Expiry must be at least one minute.");
+      showFeedback({ type: "error", title: "Invalid expiry", message: "Expiry must be at least one minute." });
       return;
     }
 
@@ -48,17 +50,16 @@ export default function IssueCouponModal({
         expiryUnixSeconds: Math.floor(Date.now() / 1000) + (Number(expiryMinutes) * 60),
       });
 
-      alert("Coupon issued successfully!");
-
       setCustomerAddress("");
       setCustomerPubKey("");
       setExpiryMinutes(60);
       refreshWalletData();
       onIssued?.();
       onClose();
+      showFeedback({ type: "success", title: "Coupon issued", message: "The coupon NFT was issued to the customer successfully." });
     } catch (err) {
       console.error(err);
-      alert(err.message || "Unable to issue coupon.");
+      showFeedback({ type: "error", title: "Coupon issuance failed", message: err.message || "Unable to issue coupon." });
     } finally {
       setLoading(false);
     }

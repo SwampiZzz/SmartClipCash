@@ -4,9 +4,11 @@ import { useWallet } from "../../hooks/useWallet";
 import { issueStamps } from "../../lib/contract";
 import { getCustomerPunchCards } from "../../lib/token";
 import { parseRedemptionReference } from "../../lib/redemptionReference";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function IssuePunchCardModal({ open, reward, mode, onClose, onIssued }) {
   const { wallet, refreshWalletData } = useWallet();
+  const { showFeedback } = useFeedback();
   const [customerAddress, setCustomerAddress] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +18,7 @@ export default function IssuePunchCardModal({ open, reward, mode, onClose, onIss
     event.preventDefault();
     const enteredValue = customerAddress.trim();
     if (!enteredValue) {
-      alert("Customer address is required.");
+      showFeedback({ type: "error", title: "Customer required", message: "Customer address is required." });
       return;
     }
     try {
@@ -50,9 +52,14 @@ export default function IssuePunchCardModal({ open, reward, mode, onClose, onIss
       refreshWalletData();
       onIssued?.();
       onClose();
+      showFeedback({
+        type: "success",
+        title: mode === "card" ? "Punch card issued" : "Stamp issued",
+        message: mode === "card" ? "The customer received the punch card and its first stamp." : "One stamp was issued to the customer's punch card.",
+      });
     } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to issue stamps.");
+      showFeedback({ type: "error", title: "Stamp issuance failed", message: error.message || "Unable to issue stamps." });
     } finally {
       setLoading(false);
     }

@@ -5,9 +5,11 @@ import { getCustomerCoupons, getCustomerPunchCards } from "../../lib/token";
 import { getCouponExpiry } from "../../lib/contract";
 import { getCouponName, getCouponRewardSats, getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
 import PresentCouponModal from "../../components/modals/PresentCouponModal";
+import { useFeedback } from "../../hooks/useFeedback";
 import PresentPunchCardModal from "../../components/modals/PresentPunchCardModal";
 
 export default function MyRewards() {
+  const { showFeedback } = useFeedback();
   const {
     wallet,
     refreshKey,
@@ -34,11 +36,11 @@ export default function MyRewards() {
       setCurrentTime(Math.floor(Date.now() / 1000));
     } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to load rewards.");
+      showFeedback({ type: "error", title: "Rewards unavailable", message: error.message || "Unable to load rewards." });
     } finally {
       setLoading(false);
     }
-  }, [wallet]);
+  }, [wallet, showFeedback]);
 
   useEffect(() => {
     void Promise.resolve().then(refreshRewards);

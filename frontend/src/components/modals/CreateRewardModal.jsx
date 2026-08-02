@@ -3,9 +3,11 @@ import { LoaderCircle, X } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { createRewardCategory } from "../../lib/contract";
 import { saveRewardMetadata } from "../../lib/metadata";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function CreateRewardModal({ open, type, onClose, onCreated }) {
   const { wallet, refreshWalletData } = useWallet();
+  const { showFeedback } = useFeedback();
   const [name, setName] = useState("");
   const [initialSupply, setInitialSupply] = useState(1000);
   const [requiredStamps, setRequiredStamps] = useState(5);
@@ -37,9 +39,14 @@ export default function CreateRewardModal({ open, type, onClose, onCreated }) {
       await onCreated?.(result);
       setName("");
       onClose();
+      showFeedback({
+        type: "success",
+        title: `${isCoupon ? "Coupon/Voucher" : "Punch card"} created`,
+        message: `${cleanName} was created on-chain successfully.\nCategory: ${result.category}`,
+      });
     } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to create reward category.");
+      showFeedback({ type: "error", title: "Creation failed", message: error.message || "Unable to create reward category." });
     } finally {
       setLoading(false);
     }

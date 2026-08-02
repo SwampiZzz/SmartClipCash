@@ -3,6 +3,7 @@ import { wallets } from "../../constants/wallets";
 import { useState } from "react";
 import { useWallet } from "../../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function ConnectWalletModal({
   isOpen,
@@ -10,6 +11,7 @@ export default function ConnectWalletModal({
 }) {
   const [selectedWallet, setSelectedWallet] = useState(null);
   const { setWallet } = useWallet();
+  const { showFeedback } = useFeedback();
   const navigate = useNavigate();
 
   if (!isOpen) return null;
@@ -26,6 +28,7 @@ export default function ConnectWalletModal({
     } else {
       navigate("/customer/dashboard");
     }
+    showFeedback({ type: "success", title: "Wallet connected", message: `${selectedWallet.name} is now connected on chipnet.` });
   }
 
   return (

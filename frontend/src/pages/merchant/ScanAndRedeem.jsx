@@ -8,9 +8,11 @@ import { wallets } from "../../constants/wallets";
 import RedemptionSuccessModal from "../../components/modals/RedemptionSuccessModal";
 import { parseRedemptionReference } from "../../lib/redemptionReference";
 import ScanCouponQrModal from "../../components/modals/ScanCouponQrModal";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function ScanAndRedeem() {
   const { wallet, refreshWalletData, recordTransaction } = useWallet();
+  const { showFeedback } = useFeedback();
   const [customerAddress, setCustomerAddress] = useState("");
   const [loadedAddress, setLoadedAddress] = useState("");
   const [coupons, setCoupons] = useState([]);
@@ -47,11 +49,11 @@ export default function ScanAndRedeem() {
       setCards(selectedCards);
     } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to load this customer's rewards.");
+      showFeedback({ type: "error", title: "Reward lookup failed", message: error.message || "Unable to load this customer's rewards." });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showFeedback]);
 
   async function loadRewards(event) {
     event.preventDefault();
@@ -92,7 +94,7 @@ export default function ScanAndRedeem() {
       refreshWalletData();
     } catch (error) {
       console.error(error);
-      alert(error.message || "Coupon redemption failed.");
+      showFeedback({ type: "error", title: "Coupon redemption failed", message: error.message || "Coupon redemption failed." });
     } finally {
       setPending("");
     }
@@ -111,7 +113,7 @@ export default function ScanAndRedeem() {
       refreshWalletData();
     } catch (error) {
       console.error(error);
-      alert(error.message || "Punch-card redemption failed.");
+      showFeedback({ type: "error", title: "Punch-card redemption failed", message: error.message || "Punch-card redemption failed." });
     } finally {
       setPending("");
     }
