@@ -6,7 +6,7 @@ import { redeemCoupon, redeemPunchCard } from "../../lib/contract";
 import { getCouponRewardSats, getCouponName, getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
 import { wallets } from "../../constants/wallets";
 import RedemptionSuccessModal from "../../components/modals/RedemptionSuccessModal";
-import { parseCouponReference } from "../../lib/redemptionReference";
+import { parseRedemptionReference } from "../../lib/redemptionReference";
 import ScanCouponQrModal from "../../components/modals/ScanCouponQrModal";
 
 export default function ScanAndRedeem() {
@@ -18,7 +18,7 @@ export default function ScanAndRedeem() {
   const [loading, setLoading] = useState(false);
   const [pending, setPending] = useState("");
   const [successTransaction, setSuccessTransaction] = useState(null);
-  const [couponReference, setCouponReference] = useState(null);
+  const [redemptionReference, setRedemptionReference] = useState(null);
   const [scannerOpen, setScannerOpen] = useState(false);
 
   const loadReference = useCallback(async (value) => {
@@ -122,7 +122,7 @@ export default function ScanAndRedeem() {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <button type="button" onClick={() => setScannerOpen(true)} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700"><ScanLine size={20} />Scan coupon QR</button>
       <div className="my-5 flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-slate-400"><span className="h-px flex-1 bg-slate-200" />or enter manually<span className="h-px flex-1 bg-slate-200" /></div>
-      <form onSubmit={loadRewards}><label className="block text-sm font-semibold">Customer address or coupon reference<input required value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="SCC1|bchtest:q...|transaction-id|0" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500" /></label><button disabled={loading} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-600 px-5 py-3 font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 sm:w-auto">{loading && <LoaderCircle size={17} className="animate-spin" />}{couponReference ? "Find coupon" : "Find rewards"}</button></form>
+      <form onSubmit={loadRewards}><label className="block text-sm font-semibold">Customer address or reward reference<input required value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="SCC1|PUNCH|bchtest:q...|category-id" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500" /></label><button disabled={loading} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-600 px-5 py-3 font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 sm:w-auto">{loading && <LoaderCircle size={17} className="animate-spin" />}{redemptionReference ? "Find reward" : "Find rewards"}</button></form>
     </div>
     {loadedAddress && <div className="space-y-7">
       <p className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">Showing rewards for <code className="break-all font-mono text-xs">{loadedAddress}</code></p>
