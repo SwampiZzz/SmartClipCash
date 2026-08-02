@@ -31,7 +31,8 @@ export async function getCouponUtxos(address) {
   return utxos.filter(
     (utxo) =>
       utxo.token &&
-      Boolean(utxo.token.nft)
+      Boolean(utxo.token.nft) &&
+      utxo.token.amount === 0n
   );
 }
 
