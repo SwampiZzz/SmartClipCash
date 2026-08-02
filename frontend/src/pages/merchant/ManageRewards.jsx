@@ -8,6 +8,7 @@ import RewardCard from "../../components/rewards/RewardCard";
 import IssueCouponModal from "../../components/modals/IssueCouponModal";
 import IssuePunchCardModal from "../../components/modals/IssuePunchCardModal";
 import CreateRewardModal from "../../components/modals/CreateRewardModal";
+import { useFeedback } from "../../hooks/useFeedback";
 
 import {
   getMerchantCouponInventory,
@@ -16,6 +17,7 @@ import {
 
 export default function ManageRewards() {
   const { wallet, refreshKey } = useWallet();
+  const { showFeedback } = useFeedback();
 
   const [activeTab, setActiveTab] = useState("coupons");
 
@@ -44,10 +46,11 @@ export default function ManageRewards() {
       setPunchCards(punchInventory);
     } catch (err) {
       console.error(err);
+      showFeedback({ type: "error", title: "Inventory unavailable", message: err.message || "Unable to load the merchant reward inventory." });
     } finally {
       setLoading(false);
     }
-  }, [wallet]);
+  }, [wallet, showFeedback]);
 
   useEffect(() => {
     void Promise.resolve().then(refreshInventory);
@@ -87,11 +90,11 @@ export default function ManageRewards() {
             <div>
 
               <h2 className="text-xl font-semibold">
-                Coupons
+                Coupons/Vouchers
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                One-time redeemable NFT coupons.
+                One-time redeemable NFT coupons/vouchers.
               </p>
 
             </div>
@@ -102,7 +105,7 @@ export default function ManageRewards() {
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
             >
               <Plus size={18} />
-              New Coupon
+              New Coupon/Voucher
             </button>
 
           </div>
@@ -114,7 +117,7 @@ export default function ManageRewards() {
               <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-12 text-center">
 
                 <p className="text-slate-500">
-                  Loading coupons...
+                  Loading coupons/vouchers...
                 </p>
 
               </div>
@@ -124,11 +127,11 @@ export default function ManageRewards() {
               <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
 
                 <h3 className="text-lg font-semibold">
-                  No Coupons Found
+                  No Coupons/Vouchers Found
                 </h3>
 
                 <p className="mt-2 text-slate-500">
-                  Create your first coupon NFT to start issuing rewards.
+                  Create your first coupon/voucher NFT to start issuing rewards.
                 </p>
 
               </div>
@@ -223,24 +226,6 @@ export default function ManageRewards() {
           </div>
 
         </>
-      )}
-
-      {/* ================= VOUCHERS ================= */}
-
-      {activeTab === "vouchers" && (
-
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
-
-          <h2 className="text-2xl font-semibold text-slate-700">
-            Vouchers
-          </h2>
-
-          <p className="mt-3 text-slate-500">
-            Voucher contracts are still under development and will be available in a future update.
-          </p>
-
-        </div>
-
       )}
 
       <IssueCouponModal

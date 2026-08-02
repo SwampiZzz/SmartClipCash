@@ -5,18 +5,13 @@ export default function RewardTabs({
   const tabs = [
     {
       id: "coupons",
-      label: "Coupons",
+      label: "Coupons/Vouchers",
       disabled: false,
     },
     {
       id: "punchcards",
       label: "Punch Cards",
       disabled: false,
-    },
-    {
-      id: "vouchers",
-      label: "Vouchers",
-      disabled: true,
     },
   ];
 

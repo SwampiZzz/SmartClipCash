@@ -5,13 +5,16 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import { WalletProvider } from "./context/WalletContext";
+import FeedbackProvider from "./context/FeedbackProvider";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <WalletProvider>
-        <App />
-      </WalletProvider>
+      <FeedbackProvider>
+        <WalletProvider>
+          <App />
+        </WalletProvider>
+      </FeedbackProvider>
     </BrowserRouter>
   </StrictMode>
 );

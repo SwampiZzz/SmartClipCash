@@ -5,9 +5,11 @@ import { getCustomerCoupons, getCustomerPunchCards } from "../../lib/token";
 import { getCouponExpiry } from "../../lib/contract";
 import { getCouponName, getCouponRewardSats, getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
 import PresentCouponModal from "../../components/modals/PresentCouponModal";
+import { useFeedback } from "../../hooks/useFeedback";
 import PresentPunchCardModal from "../../components/modals/PresentPunchCardModal";
 
 export default function MyRewards() {
+  const { showFeedback } = useFeedback();
   const {
     wallet,
     refreshKey,
@@ -34,11 +36,11 @@ export default function MyRewards() {
       setCurrentTime(Math.floor(Date.now() / 1000));
     } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to load rewards.");
+      showFeedback({ type: "error", title: "Rewards unavailable", message: error.message || "Unable to load rewards." });
     } finally {
       setLoading(false);
     }
-  }, [wallet]);
+  }, [wallet, showFeedback]);
 
   useEffect(() => {
     void Promise.resolve().then(refreshRewards);
@@ -65,15 +67,15 @@ export default function MyRewards() {
 
       {loading ? <div className="rounded-2xl border bg-white p-12 text-center text-slate-500">Loading on-chain rewards...</div> : <>
         <section>
-          <h2 className="mb-4 text-xl font-semibold">Active Coupons</h2>
+          <h2 className="mb-4 text-xl font-semibold">Active Coupons/Vouchers</h2>
           <div className="grid gap-5 lg:grid-cols-2">
-            {activeCoupons.length ? activeCoupons.map((coupon) => <CouponCard key={`${coupon.txid}-${coupon.vout}`} coupon={coupon} onPresent={setPresentedCoupon} />) : <Empty label="No active coupons in this wallet." />}
+            {activeCoupons.length ? activeCoupons.map((coupon) => <CouponCard key={`${coupon.txid}-${coupon.vout}`} coupon={coupon} onPresent={setPresentedCoupon} />) : <Empty label="No active coupons/vouchers in this wallet." />}
           </div>
         </section>
 
         {archivedCoupons.length > 0 && <section className="rounded-2xl border border-slate-200 bg-white">
           <button type="button" onClick={() => setShowExpired((value) => !value)} className="flex w-full items-center justify-between px-6 py-5 text-left">
-            <span><span className="font-semibold">Expired & legacy coupons</span><span className="ml-2 rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{archivedCoupons.length}</span></span>
+            <span><span className="font-semibold">Expired & legacy coupons/vouchers</span><span className="ml-2 rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{archivedCoupons.length}</span></span>
             {showExpired ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
           {showExpired && <div className="grid gap-5 border-t border-slate-200 p-6 lg:grid-cols-2">
@@ -106,7 +108,7 @@ export default function MyRewards() {
 }
 
 function CouponCard({ coupon, onPresent }) {
-  return <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><TicketPercent className="text-emerald-600" /><h3 className="mt-4 text-lg font-semibold">{getCouponName(coupon.category, coupon.commitment)}</h3><p className="mt-2 text-sm text-slate-500">One-time NFT &middot; {getCouponRewardSats(coupon.category)} sats reward</p><p className="mt-1 text-xs text-slate-500">Expires {new Date(coupon.expiry * 1000).toLocaleString()}</p><button onClick={() => onPresent(coupon)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white">Present to merchant</button></article>;
+  return <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><TicketPercent className="text-emerald-600" /><h3 className="mt-4 text-lg font-semibold">{getCouponName(coupon.category, coupon.commitment)}</h3><p className="mt-2 text-sm text-slate-500">One-time coupon/voucher NFT &middot; {getCouponRewardSats(coupon.category)} sats reward</p><p className="mt-1 text-xs text-slate-500">Expires {new Date(coupon.expiry * 1000).toLocaleString()}</p><button onClick={() => onPresent(coupon)} className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white">Present to merchant</button></article>;
 }
 
 function ArchivedCouponCard({ coupon }) {

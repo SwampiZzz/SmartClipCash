@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 
 import { NETWORK } from "../../config/appConfig";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function MerchantDashboard() {
   const { wallet, refreshKey } = useWallet();
+  const { showFeedback } = useFeedback();
 
   const [loading, setLoading] = useState(true);
 
@@ -32,13 +34,14 @@ export default function MerchantDashboard() {
         setSummary(data);
       } catch (err) {
         console.error(err);
+        showFeedback({ type: "error", title: "Dashboard unavailable", message: err.message || "Unable to load the merchant dashboard." });
       } finally {
         setLoading(false);
       }
     }
 
     loadDashboard();
-  }, [wallet, refreshKey]);
+  }, [wallet, refreshKey, showFeedback]);
 
   return (
     <div className="space-y-8">
@@ -219,7 +222,7 @@ export default function MerchantDashboard() {
           </p>
 
           <p className="mt-2 text-sm text-slate-500">
-            Issuing stamps, coupons and redemptions will appear here.
+            Issuing stamps, coupons/vouchers and redemptions will appear here.
           </p>
 
         </div>

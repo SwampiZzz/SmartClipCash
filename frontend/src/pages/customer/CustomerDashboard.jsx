@@ -4,9 +4,11 @@ import { Stamp, TicketPercent } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { getCustomerPunchCards, getCustomerSummary } from "../../lib/token";
 import { getPunchCardConfig, getPunchCardName } from "../../lib/metadata";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function CustomerDashboard() {
   const { wallet, refreshKey } = useWallet();
+  const { showFeedback } = useFeedback();
   const [summary, setSummary] = useState({ coupons: 0, punchCards: 0 });
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,19 +25,20 @@ export default function CustomerDashboard() {
         setCards(nextCards);
       } catch (error) {
         console.error(error);
+        showFeedback({ type: "error", title: "Dashboard unavailable", message: error.message || "Unable to load the customer dashboard." });
       } finally {
         setLoading(false);
       }
     }
     void loadDashboard();
-  }, [wallet, refreshKey]);
+  }, [wallet, refreshKey, showFeedback]);
 
   return (
     <div className="space-y-8">
       <div><h1 className="text-3xl font-bold text-slate-900">Customer Dashboard</h1><p className="mt-2 text-slate-500">Live reward balances from your connected wallet.</p></div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <SummaryCard label="Active Coupons" value={loading ? "--" : summary.coupons} icon={<TicketPercent className="text-emerald-600" size={34} />} />
+        <SummaryCard label="Active Coupons/Vouchers" value={loading ? "--" : summary.coupons} icon={<TicketPercent className="text-emerald-600" size={34} />} />
         <SummaryCard label="Punch Card Stamps" value={loading ? "--" : summary.punchCards} icon={<Stamp className="text-emerald-600" size={34} />} />
       </div>
 

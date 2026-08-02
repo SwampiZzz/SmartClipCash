@@ -3,9 +3,11 @@ import { LoaderCircle, X } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { createRewardCategory } from "../../lib/contract";
 import { saveRewardMetadata } from "../../lib/metadata";
+import { useFeedback } from "../../hooks/useFeedback";
 
 export default function CreateRewardModal({ open, type, onClose, onCreated }) {
   const { wallet, refreshWalletData } = useWallet();
+  const { showFeedback } = useFeedback();
   const [name, setName] = useState("");
   const [initialSupply, setInitialSupply] = useState(1000);
   const [requiredStamps, setRequiredStamps] = useState(5);
@@ -37,9 +39,14 @@ export default function CreateRewardModal({ open, type, onClose, onCreated }) {
       await onCreated?.(result);
       setName("");
       onClose();
+      showFeedback({
+        type: "success",
+        title: `${isCoupon ? "Coupon/Voucher" : "Punch card"} created`,
+        message: `${cleanName} was created on-chain successfully.\nCategory: ${result.category}`,
+      });
     } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to create reward category.");
+      showFeedback({ type: "error", title: "Creation failed", message: error.message || "Unable to create reward category." });
     } finally {
       setLoading(false);
     }
@@ -49,7 +56,7 @@ export default function CreateRewardModal({ open, type, onClose, onCreated }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <form onSubmit={handleSubmit} className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl sm:rounded-3xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5 sm:px-8 sm:py-6">
-          <div><h2 className="text-2xl font-bold">New {isCoupon ? "Coupon" : "Punch Card"}</h2><p className="mt-1 text-sm text-slate-500">Create a new on-chain CashToken category.</p></div>
+          <div><h2 className="text-2xl font-bold">New {isCoupon ? "Coupon/Voucher" : "Punch Card"}</h2><p className="mt-1 text-sm text-slate-500">Create a new on-chain CashToken category.</p></div>
           <button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-slate-100"><X size={20} /></button>
         </div>
         <div className="space-y-5 p-5 sm:p-8">
