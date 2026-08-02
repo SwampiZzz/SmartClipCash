@@ -10,6 +10,8 @@ export default function RewardCard({
   type,
   reward,
   onIssue,
+  onIssuePunchCard,
+  onIssueStamp,
 }) {
   const config = {
     coupon: {
@@ -179,16 +181,20 @@ export default function RewardCard({
           Blockchain Reward
         </span>
 
-        <button
+        {type === "punchcard" ? (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button type="button" onClick={() => onIssuePunchCard?.(reward)} className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">Issue Punch Card</button>
+            <button type="button" onClick={() => onIssueStamp?.(reward)} className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">Issue 1 Stamp <ArrowRight size={16} /></button>
+          </div>
+        ) : <button
           type="button"
           disabled={!canIssue}
           onClick={() => onIssue?.(reward)}
           className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {canIssue ? current.button : "Issued Coupon"}
-
           <ArrowRight size={16} />
-        </button>
+        </button>}
 
       </div>
 

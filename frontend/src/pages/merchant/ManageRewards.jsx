@@ -212,7 +212,8 @@ export default function ManageRewards() {
                   key={card.category}
                   type="punchcard"
                   reward={card}
-                  onIssue={setSelectedPunchCard}
+                  onIssuePunchCard={(reward) => setSelectedPunchCard({ reward, mode: "card" })}
+                  onIssueStamp={(reward) => setSelectedPunchCard({ reward, mode: "stamp" })}
                 />
 
               ))
@@ -250,7 +251,8 @@ export default function ManageRewards() {
       />
       <IssuePunchCardModal
         open={selectedPunchCard !== null}
-        reward={selectedPunchCard}
+        reward={selectedPunchCard?.reward}
+        mode={selectedPunchCard?.mode}
         onClose={() => setSelectedPunchCard(null)}
         onIssued={refreshInventory}
       />
