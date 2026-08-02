@@ -4,6 +4,7 @@ import { X, LoaderCircle } from "lucide-react";
 import { useWallet } from "../../hooks/useWallet";
 import { issueCoupon } from "../../lib/contract";
 import { useFeedback } from "../../hooks/useFeedback";
+import { wallets } from "../../constants/wallets";
 
 export default function IssueCouponModal({
   open,
@@ -14,8 +15,8 @@ export default function IssueCouponModal({
   const { wallet, refreshWalletData } = useWallet();
   const { showFeedback } = useFeedback();
 
-  const [customerAddress, setCustomerAddress] = useState("");
-  const [customerPubKey, setCustomerPubKey] = useState("");
+  const [customerAddress, setCustomerAddress] = useState(wallets.customer.address);
+  const [customerPubKey, setCustomerPubKey] = useState(wallets.customer.pubkeyHex);
   const [expiryMinutes, setExpiryMinutes] = useState(60);
   const [loading, setLoading] = useState(false);
 
@@ -50,8 +51,8 @@ export default function IssueCouponModal({
         expiryUnixSeconds: Math.floor(Date.now() / 1000) + (Number(expiryMinutes) * 60),
       });
 
-      setCustomerAddress("");
-      setCustomerPubKey("");
+      setCustomerAddress(wallets.customer.address);
+      setCustomerPubKey(wallets.customer.pubkeyHex);
       setExpiryMinutes(60);
       refreshWalletData();
       onIssued?.();
@@ -129,17 +130,14 @@ export default function IssueCouponModal({
           <div>
 
             <label className="mb-2 block text-sm font-semibold">
-              Customer Address
+              Demo Customer Address
             </label>
 
             <input
               type="text"
               value={customerAddress}
-              onChange={(e) =>
-                setCustomerAddress(e.target.value)
-              }
-              placeholder="bchtest:q..."
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-500"
+              readOnly
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-600 outline-none"
             />
 
           </div>
@@ -159,14 +157,13 @@ export default function IssueCouponModal({
 
           <div>
             <label className="mb-2 block text-sm font-semibold">
-              Customer Public Key
+              Demo Customer Public Key
             </label>
             <input
               type="text"
               value={customerPubKey}
-              onChange={(e) => setCustomerPubKey(e.target.value)}
-              placeholder="02... or 03..."
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-500"
+              readOnly
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-600 outline-none"
             />
           </div>
 
@@ -175,8 +172,9 @@ export default function IssueCouponModal({
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
 
             <p className="text-sm text-amber-700">
-              The coupon embeds its expiry and the recipient public-key hash, so
-              the contract can enforce both expiry and non-transferable ownership.
+              Demo mode uses the preconfigured customer address and matching
+              compressed public key. The coupon embeds its expiry and the
+              recipient public-key hash for ownership enforcement.
             </p>
 
           </div>
